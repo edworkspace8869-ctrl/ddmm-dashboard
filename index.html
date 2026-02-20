@@ -1,979 +1,1063 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Parliament — Decision Dashboard</title>
-  <meta name="theme-color" content="#0f0f13" />
-  <meta name="description" content="Delayed Decision-Making Mechanism — Personal Dashboard" />
-  <link rel="manifest" href="manifest.json" />
-  <link rel="apple-touch-icon" href="icon-192.png" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
-  <style>
-    /* ── Reset & Tokens ── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    :root {
-      --bg: #0f0f13;
-      --surface: #16161d;
-      --surface2: #1e1e28;
-      --border: #2a2a38;
-      --blue: #2a5cff;
-      --blue-dim: #1a3aaa;
-      --blue-glow: rgba(42,92,255,.18);
-      --white-coal: #e8e8e8;
-      --white-dim: #888;
-      --text: #e4e4ef;
-      --text-dim: #777;
-      --accent: #7b61ff;
-      --danger: #ff4757;
-      --success: #2ed573;
-      --r: 10px;
-      --r-sm: 6px;
-      --serif: 'Cormorant Garamond', Georgia, serif;
-      --mono: 'DM Mono', monospace;
-    }
-    html { font-size: 16px; scroll-behavior: smooth; }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--mono);
-      font-weight: 300;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Parliament</title>
+<meta name="theme-color" content="#0c0c10"/>
+<link rel="manifest" href="manifest.json"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Instrument+Mono:ital,wght@0,400;0,500&display=swap" rel="stylesheet"/>
+<style>
+/* ─── Reset ─────────────────────────────────── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --ink:#0c0c10;
+  --paper:#f5f2eb;
+  --paper2:#ede9e0;
+  --paper3:#e4dfd3;
+  --gold:#b8913a;
+  --gold-light:#d4a84b;
+  --gold-pale:rgba(184,145,58,.12);
+  --red:#c0392b;
+  --red-pale:rgba(192,57,43,.1);
+  --green:#1e7a4a;
+  --green-pale:rgba(30,122,74,.1);
+  --ink-dim:#5c5a54;
+  --ink-mid:#8c8980;
+  --border:#d4cfc4;
+  --border-dark:#b8b2a4;
+  --serif:'Libre Baskerville',Georgia,serif;
+  --mono:'Instrument Mono',monospace;
+  --r:8px; --r-sm:5px;
+  --shadow:0 2px 12px rgba(0,0,0,.08);
+  --shadow-lg:0 8px 32px rgba(0,0,0,.14);
+}
+html{font-size:16px;scroll-behavior:smooth;}
+body{background:var(--paper);color:var(--ink);font-family:var(--mono);font-size:.88rem;font-weight:400;min-height:100vh;display:flex;flex-direction:column;}
+h1,h2,h3{font-family:var(--serif);letter-spacing:-.02em;font-weight:700;}
+input,textarea,select,button{font-family:var(--mono);}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:var(--paper2);}
+::-webkit-scrollbar-thumb{background:var(--border-dark);border-radius:3px;}
 
-    /* ── Typography ── */
-    h1, h2, h3, h4 { font-family: var(--serif); font-weight: 500; letter-spacing: -.01em; }
+/* ─── Header ─────────────────────────────────── */
+header{
+  background:var(--ink);
+  color:var(--paper);
+  padding:.9rem 2rem;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:3px solid var(--gold);
+  position:sticky;top:0;z-index:100;
+}
+.logo{display:flex;align-items:baseline;gap:.65rem;}
+.logo h1{font-size:1.2rem;color:var(--paper);letter-spacing:.02em;}
+.logo-sep{width:1px;height:14px;background:rgba(255,255,255,.2);align-self:center;}
+.logo-sub{font-size:.6rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4);}
+.pwa-hint{font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.3);}
 
-    /* ── Layout ── */
-    header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 1.25rem 2rem;
-      border-bottom: 1px solid var(--border);
-      position: sticky;
-      top: 0;
-      background: rgba(15,15,19,.92);
-      backdrop-filter: blur(12px);
-      z-index: 100;
-    }
-    .logo {
-      display: flex; align-items: center; gap: .75rem;
-    }
-    .logo-icon {
-      width: 32px; height: 32px;
-      background: linear-gradient(135deg, var(--blue), var(--accent));
-      border-radius: 50%;
-      display: flex; align-items: center; justify-content: center;
-      font-size: .75rem; color: #fff;
-    }
-    .logo h1 { font-size: 1.2rem; color: var(--text); }
-    .logo span { font-family: var(--mono); font-size: .65rem; color: var(--text-dim); letter-spacing: .1em; text-transform: uppercase; display: block; margin-top: 1px; }
+/* ─── Tabs ─────────────────────────────────── */
+.tabs{
+  background:var(--ink);
+  display:flex;
+  border-bottom:1px solid rgba(255,255,255,.08);
+  padding:0 2rem;
+}
+.tab-btn{
+  font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;
+  background:none;border:none;color:rgba(255,255,255,.35);
+  padding:.65rem 1rem .6rem;cursor:pointer;
+  border-bottom:2px solid transparent;margin-bottom:-1px;
+  transition:all .18s;
+}
+.tab-btn:hover{color:rgba(255,255,255,.7);}
+.tab-btn.active{color:var(--gold-light);border-bottom-color:var(--gold);}
 
-    .header-actions { display: flex; gap: .5rem; }
+/* ─── Main ─────────────────────────────────── */
+main{flex:1;padding:2rem;max-width:780px;margin:0 auto;width:100%;}
+.view{display:none;}
+.view.active{display:block;animation:rise .22s ease;}
+@keyframes rise{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
 
-    main { flex: 1; padding: 2rem; max-width: 1100px; margin: 0 auto; width: 100%; }
+/* ─── Typography helpers ─────────────────────── */
+.eyebrow{font-size:.58rem;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-mid);display:block;margin-bottom:.35rem;}
+.page-title{font-size:1.65rem;line-height:1.2;margin-bottom:.3rem;}
+.page-sub{font-size:.8rem;color:var(--ink-dim);margin-bottom:1.75rem;line-height:1.6;}
+.rule{border:none;border-top:1px solid var(--border);margin:1.5rem 0;}
 
-    /* ── Buttons ── */
-    .btn {
-      font-family: var(--mono); font-size: .7rem; font-weight: 400;
-      letter-spacing: .06em; text-transform: uppercase;
-      border: 1px solid var(--border); background: transparent;
-      color: var(--text-dim); padding: .45rem .9rem;
-      border-radius: var(--r-sm); cursor: pointer;
-      transition: all .2s; white-space: nowrap;
-    }
-    .btn:hover { border-color: var(--text-dim); color: var(--text); background: var(--surface); }
-    .btn-primary { background: var(--blue); border-color: var(--blue); color: #fff; }
-    .btn-primary:hover { background: #3d6dff; border-color: #3d6dff; color: #fff; }
-    .btn-ghost { border-color: transparent; }
-    .btn-danger { border-color: var(--danger); color: var(--danger); }
-    .btn-danger:hover { background: var(--danger); color: #fff; }
-    .btn-sm { padding: .3rem .65rem; font-size: .65rem; }
+/* ─── Buttons ─────────────────────────────────── */
+.btn{
+  font-family:var(--mono);font-size:.68rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;
+  border:1.5px solid var(--border-dark);background:transparent;color:var(--ink-dim);
+  padding:.45rem 1rem;border-radius:var(--r-sm);cursor:pointer;
+  transition:all .16s;display:inline-flex;align-items:center;gap:.4rem;white-space:nowrap;
+}
+.btn:hover{border-color:var(--ink);color:var(--ink);background:var(--paper2);}
+.btn:disabled{opacity:.35;cursor:not-allowed;pointer-events:none;}
+.btn-gold{background:var(--gold);border-color:var(--gold);color:#fff;}
+.btn-gold:hover{background:var(--gold-light);border-color:var(--gold-light);color:#fff;}
+.btn-ink{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+.btn-ink:hover{background:#1e1e26;border-color:#1e1e26;color:var(--paper);}
+.btn-ghost{border-color:transparent;color:var(--ink-mid);}
+.btn-ghost:hover{border-color:var(--border);color:var(--ink);background:transparent;}
+.btn-danger{border-color:rgba(192,57,43,.3);color:var(--red);}
+.btn-danger:hover{background:var(--red);border-color:var(--red);color:#fff;}
+.btn-sm{padding:.3rem .65rem;font-size:.6rem;}
+.btn-for{border-color:rgba(30,122,74,.35);color:var(--green);}
+.btn-for:hover,.btn-for.active{background:var(--green);border-color:var(--green);color:#fff;}
+.btn-against{border-color:rgba(192,57,43,.3);color:var(--red);}
+.btn-against:hover,.btn-against.active{background:var(--red);border-color:var(--red);color:#fff;}
 
-    /* ── Tab Nav ── */
-    .tab-nav {
-      display: flex; gap: .25rem;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 2rem;
-    }
-    .tab-btn {
-      font-family: var(--mono); font-size: .7rem; letter-spacing: .08em;
-      text-transform: uppercase; background: none; border: none;
-      color: var(--text-dim); padding: .75rem 1.25rem;
-      cursor: pointer; border-bottom: 2px solid transparent;
-      margin-bottom: -1px; transition: all .2s;
-    }
-    .tab-btn:hover { color: var(--text); }
-    .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+/* ─── Form elements ─────────────────────────── */
+.field{display:flex;flex-direction:column;gap:.3rem;margin-bottom:.85rem;}
+.field label{font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-mid);}
+.fi{
+  font-family:var(--mono);font-size:.85rem;font-weight:400;
+  background:var(--paper);border:1.5px solid var(--border);
+  border-radius:var(--r-sm);color:var(--ink);
+  padding:.5rem .75rem;outline:none;transition:border-color .16s;width:100%;
+}
+.fi:focus{border-color:var(--gold);}
+.fi::placeholder{color:var(--ink-mid);}
+input[type=number].fi{-moz-appearance:textfield;}
+input[type=number].fi::-webkit-inner-spin-button{display:none;}
 
-    /* ── Views ── */
-    .view { display: none; animation: fadeIn .25s ease; }
-    .view.active { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+/* ─── Cards ─────────────────────────────────── */
+.card{
+  background:var(--paper);border:1.5px solid var(--border);
+  border-radius:var(--r);padding:1.35rem;
+  box-shadow:var(--shadow);
+}
+.card+.card{margin-top:.75rem;}
+.card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.1rem;}
+.card-title{font-family:var(--serif);font-size:1.05rem;}
 
-    /* ── Cards ── */
-    .card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      padding: 1.5rem;
-    }
-    .card-sm { padding: 1rem 1.25rem; }
+/* ─── Steps nav ─────────────────────────────── */
+.step-nav{
+  display:flex;align-items:center;gap:0;
+  margin-bottom:2rem;
+  border:1.5px solid var(--border);border-radius:var(--r);
+  overflow:hidden;background:var(--paper2);
+}
+.step-pip{
+  flex:1;padding:.5rem .5rem;text-align:center;
+  font-size:.58rem;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-mid);border-right:1px solid var(--border);
+  position:relative;transition:all .2s;line-height:1.3;
+}
+.step-pip:last-child{border-right:none;}
+.step-pip.done{color:var(--gold);background:rgba(184,145,58,.06);}
+.step-pip.active{background:var(--ink);color:var(--gold-light);font-weight:500;}
+.step-pip.done::after{content:'✓';display:block;font-size:.65rem;}
 
-    /* ── Overview / Active Decision ── */
-    .overview-header {
-      display: flex; align-items: flex-start;
-      justify-content: space-between; gap: 1rem;
-      margin-bottom: 1.75rem;
-    }
-    .decision-title-group { flex: 1; }
-    .decision-label {
-      font-size: .65rem; letter-spacing: .12em; text-transform: uppercase;
-      color: var(--text-dim); margin-bottom: .4rem;
-    }
-    .decision-title {
-      font-family: var(--serif); font-size: 1.9rem;
-      line-height: 1.2; color: var(--text);
-    }
-    .decision-date { font-size: .7rem; color: var(--text-dim); margin-top: .4rem; }
+/* ─── Thought row ─────────────────────────────── */
+.thought-row{
+  display:flex;align-items:center;gap:.75rem;
+  padding:.65rem .85rem;
+  background:var(--paper2);border:1.5px solid var(--border);
+  border-radius:var(--r-sm);margin-bottom:.5rem;
+  transition:border-color .15s;
+}
+.thought-row:hover{border-color:var(--border-dark);}
+.thought-name{flex:1;font-size:.88rem;color:var(--ink);}
+.thought-weight{
+  font-family:var(--serif);font-size:1.4rem;font-weight:700;
+  color:var(--gold);min-width:2rem;text-align:center;
+}
+.thought-remove{
+  width:24px;height:24px;border-radius:50%;background:none;border:1px solid transparent;
+  color:var(--ink-mid);font-size:.8rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;flex-shrink:0;
+}
+.thought-remove:hover{border-color:var(--red);color:var(--red);}
 
-    /* Weight display */
-    .general-weight-card {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-    }
-    .weight-card-label {
-      font-size: .65rem; letter-spacing: .1em; text-transform: uppercase;
-      color: var(--text-dim); margin-bottom: 1rem;
-    }
-    .weight-row {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
-    }
-    .weight-block {
-      display: flex; flex-direction: column; gap: .5rem;
-    }
-    .weight-score {
-      font-family: var(--serif); font-size: 3.5rem; font-weight: 600;
-      line-height: 1;
-    }
-    .weight-score.blue { color: var(--blue); }
-    .weight-score.white { color: var(--white-coal); }
-    .coalition-name {
-      font-size: .65rem; letter-spacing: .1em; text-transform: uppercase;
-      color: var(--text-dim);
-    }
-    .coalition-desc {
-      font-size: .7rem; color: var(--text-dim); font-style: italic; margin-top: .1rem;
-    }
+/* ─── Seat distributor ─────────────────────────── */
+.seat-field{
+  background:var(--paper2);border:1.5px solid var(--border);
+  border-radius:var(--r);padding:1.1rem;margin-bottom:.85rem;
+}
+.seat-field-name{font-family:var(--serif);font-size:1rem;margin-bottom:.15rem;}
+.seat-counter{font-size:.68rem;color:var(--ink-mid);margin-bottom:.85rem;}
+.seat-counter span{font-family:var(--mono);font-weight:500;}
+.seat-counter span.ok{color:var(--green);}
+.seat-counter span.over{color:var(--red);}
+.seat-row{display:flex;align-items:center;gap:.65rem;margin-bottom:.5rem;}
+.seat-row:last-child{margin-bottom:0;}
+.seat-thought-name{flex:1;font-size:.83rem;color:var(--ink-dim);}
+.seat-stepper{display:flex;align-items:center;gap:.3rem;}
+.seat-val{
+  font-family:var(--serif);font-size:1.25rem;font-weight:700;
+  color:var(--gold);min-width:1.6rem;text-align:center;
+}
+.s-btn{
+  width:26px;height:26px;border-radius:var(--r-sm);
+  background:var(--paper);border:1.5px solid var(--border);
+  color:var(--ink-dim);font-size:.9rem;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .14s;flex-shrink:0;
+}
+.s-btn:hover{border-color:var(--gold);color:var(--gold);background:var(--gold-pale);}
+.s-btn:disabled{opacity:.3;cursor:not-allowed;}
 
-    /* Verdict bar */
-    .verdict-bar {
-      height: 6px; border-radius: 3px;
-      background: var(--border);
-      overflow: hidden; margin: 1rem 0;
-      position: relative;
-    }
-    .verdict-fill {
-      height: 100%; border-radius: 3px;
-      background: linear-gradient(90deg, var(--blue), var(--accent));
-      transition: width .6s cubic-bezier(.4,0,.2,1);
-    }
-    .verdict-labels {
-      display: flex; justify-content: space-between;
-      font-size: .6rem; letter-spacing: .08em; text-transform: uppercase;
-      color: var(--text-dim); margin-top: .35rem;
-    }
+/* ─── Summary confirm ─────────────────────────── */
+.summary-section{margin-bottom:1.25rem;}
+.summary-label{font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-mid);margin-bottom:.5rem;display:block;}
+.summary-thought-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.5rem .75rem;border-bottom:1px solid var(--border);
+}
+.summary-thought-row:last-child{border-bottom:none;}
+.summary-field-block{
+  background:var(--paper2);border:1.5px solid var(--border);
+  border-radius:var(--r-sm);overflow:hidden;margin-bottom:.5rem;
+}
+.summary-field-header{
+  padding:.45rem .75rem;background:var(--paper3);
+  font-size:.72rem;font-family:var(--serif);font-style:italic;
+  border-bottom:1px solid var(--border);
+}
+.summary-field-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:.42rem .75rem;border-bottom:1px solid var(--border);font-size:.82rem;
+}
+.summary-field-row:last-child{border-bottom:none;}
+.seat-dot{
+  display:inline-flex;gap:3px;
+}
+.seat-dot span{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--gold);display:inline-block;
+}
+.seat-dot span.empty{background:var(--border);}
 
-    /* Category grid */
-    .categories-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 1rem;
-    }
-    .category-card {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      padding: 1.25rem;
-      position: relative;
-    }
-    .category-name {
-      font-size: .65rem; letter-spacing: .1em; text-transform: uppercase;
-      color: var(--text-dim); margin-bottom: .85rem;
-    }
-    .category-scores {
-      display: flex; gap: .6rem; align-items: center;
-    }
-    .cat-score {
-      font-family: var(--serif); font-size: 2rem; font-weight: 600;
-    }
-    .cat-score.blue { color: var(--blue); }
-    .cat-score.white { color: var(--white-coal); }
-    .cat-divider { color: var(--border); font-size: 1.2rem; }
-    .cat-actions {
-      display: flex; gap: .4rem;
-      margin-top: 1rem;
-    }
+/* ─── Parliament formed ─────────────────────────── */
+.parliament-formed{
+  text-align:center;padding:2.5rem 1rem;
+}
+.formed-icon{font-size:3rem;margin-bottom:1rem;display:block;}
+.formed-title{font-family:var(--serif);font-size:2rem;margin-bottom:.5rem;}
+.formed-sub{font-size:.82rem;color:var(--ink-dim);margin-bottom:2rem;line-height:1.7;}
 
-    /* ── Edit Mode ── */
-    .edit-panel {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-    }
-    .edit-panel-title {
-      font-size: .65rem; letter-spacing: .1em; text-transform: uppercase;
-      color: var(--text-dim); margin-bottom: 1.25rem;
-    }
-    .field-row {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
-      margin-bottom: 1rem;
-    }
-    .field { display: flex; flex-direction: column; gap: .4rem; }
-    .field label {
-      font-size: .65rem; letter-spacing: .08em; text-transform: uppercase;
-      color: var(--text-dim);
-    }
-    .field input, .field textarea {
-      font-family: var(--mono); font-size: .8rem; font-weight: 300;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--r-sm); color: var(--text);
-      padding: .55rem .75rem; outline: none;
-      transition: border-color .2s;
-    }
-    .field input:focus, .field textarea:focus { border-color: var(--blue); }
-    .field input[type="number"] { -moz-appearance: textfield; }
-    .field input[type="number"]::-webkit-inner-spin-button { display: none; }
-    .stepper {
-      display: flex; align-items: center; gap: .5rem;
-    }
-    .stepper input {
-      width: 70px; text-align: center;
-    }
-    .stepper-btn {
-      width: 32px; height: 32px;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--r-sm); color: var(--text);
-      font-size: 1rem; cursor: pointer;
-      display: flex; align-items: center; justify-content: center;
-      transition: all .2s; flex-shrink: 0;
-    }
-    .stepper-btn:hover { background: var(--surface2); border-color: var(--blue); color: var(--blue); }
+/* ─── Parliament status banner ─────────────────── */
+.parliament-status{
+  background:var(--ink);color:var(--paper);
+  border-radius:var(--r);padding:1.1rem 1.35rem;
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap;
+  margin-bottom:1.5rem;
+}
+.ps-left{}
+.ps-label{font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:.3rem;}
+.ps-thoughts{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem;}
+.ps-thought-chip{
+  font-size:.65rem;padding:.2rem .6rem;border-radius:99px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
+  color:rgba(255,255,255,.7);
+}
+.ps-thought-chip .chip-w{color:var(--gold-light);margin-left:.3rem;font-family:var(--serif);}
 
-    /* ── Category Editor ── */
-    .category-editor-row {
-      display: flex; align-items: center; gap: .75rem;
-      padding: .75rem 0; border-bottom: 1px solid var(--border);
-    }
-    .category-editor-row:last-child { border-bottom: none; }
-    .cat-name-input {
-      flex: 1;
-      font-family: var(--mono); font-size: .8rem;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--r-sm); color: var(--text);
-      padding: .45rem .7rem; outline: none;
-      transition: border-color .2s;
-    }
-    .cat-name-input:focus { border-color: var(--blue); }
+/* ─── Voting ─────────────────────────────────── */
+.vote-initiate{
+  text-align:center;padding:3rem 1rem;
+}
+.vote-session{animation:rise .2s ease;}
+.vote-thought-card{
+  display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  padding:.85rem 1.1rem;
+  background:var(--paper2);border:1.5px solid var(--border);
+  border-radius:var(--r-sm);margin-bottom:.55rem;
+  transition:border-color .15s;
+}
+.vtc-left{display:flex;align-items:center;gap:.75rem;}
+.vtc-name{font-size:.9rem;font-family:var(--serif);}
+.vtc-weight{font-family:var(--serif);font-size:1.35rem;font-weight:700;color:var(--gold);}
+.vtc-btns{display:flex;gap:.4rem;}
 
-    /* ── History View ── */
-    .history-list { display: flex; flex-direction: column; gap: .75rem; }
-    .history-item {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      padding: 1.25rem 1.5rem;
-      display: flex; align-items: center; gap: 1.25rem;
-      cursor: pointer;
-      transition: border-color .2s, background .2s;
-    }
-    .history-item:hover { border-color: var(--blue); background: var(--surface2); }
-    .history-item.archived { opacity: .6; }
-    .history-info { flex: 1; }
-    .history-name {
-      font-family: var(--serif); font-size: 1.1rem; margin-bottom: .25rem;
-    }
-    .history-meta { font-size: .65rem; color: var(--text-dim); letter-spacing: .05em; }
-    .history-verdict {
-      display: flex; gap: .6rem; align-items: center;
-    }
-    .verdict-chip {
-      font-size: .65rem; letter-spacing: .08em; text-transform: uppercase;
-      padding: .3rem .7rem; border-radius: 99px;
-    }
-    .verdict-chip.blue { background: var(--blue-glow); color: var(--blue); border: 1px solid var(--blue-dim); }
-    .verdict-chip.white { background: rgba(232,232,232,.08); color: var(--white-coal); border: 1px solid #444; }
-    .verdict-chip.tied { background: rgba(123,97,255,.12); color: var(--accent); border: 1px solid rgba(123,97,255,.3); }
+/* Results */
+.result-banner{
+  border-radius:var(--r);padding:1.35rem 1.5rem;margin-bottom:1rem;
+  border:2px solid;
+}
+.result-banner.passed-t1{background:rgba(30,122,74,.07);border-color:rgba(30,122,74,.3);}
+.result-banner.passed-t2{background:rgba(30,122,74,.12);border-color:rgba(30,122,74,.5);}
+.result-banner.passed-t3{background:rgba(30,122,74,.18);border-color:var(--green);}
+.result-banner.not-passed{background:var(--red-pale);border-color:rgba(192,57,43,.3);}
+.result-verdict{font-family:var(--serif);font-size:1.5rem;margin-bottom:.25rem;}
+.result-pct{font-size:.8rem;color:var(--ink-dim);}
+.result-tier-badge{
+  display:inline-block;font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;
+  padding:.25rem .7rem;border-radius:99px;margin-top:.5rem;
+}
+.tb-t1{background:rgba(30,122,74,.12);color:var(--green);border:1px solid rgba(30,122,74,.3);}
+.tb-t2{background:rgba(30,122,74,.2);color:var(--green);border:1px solid rgba(30,122,74,.5);}
+.tb-t3{background:rgba(184,145,58,.12);color:var(--gold);border:1px solid rgba(184,145,58,.35);}
+.tb-np{background:var(--red-pale);color:var(--red);border:1px solid rgba(192,57,43,.25);}
+.result-breakdown{margin-top:1rem;padding-top:1rem;border-top:1px solid var(--border);}
+.rb-row{display:flex;align-items:center;justify-content:space-between;padding:.35rem 0;font-size:.82rem;border-bottom:1px solid var(--border);}
+.rb-row:last-child{border-bottom:none;}
+.rb-name{color:var(--ink-dim);}
+.rb-vote-for{color:var(--green);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;}
+.rb-vote-ag{color:var(--red);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase;}
+.rb-w{font-family:var(--serif);font-weight:700;}
+.validity-note{
+  margin-top:.85rem;padding:.65rem .85rem;
+  background:var(--paper2);border-radius:var(--r-sm);border:1px solid var(--border);
+  font-size:.75rem;color:var(--ink-dim);line-height:1.65;
+}
 
-    /* ── Empty State ── */
-    .empty {
-      text-align: center; padding: 4rem 2rem;
-      color: var(--text-dim);
-    }
-    .empty-icon { font-size: 2.5rem; margin-bottom: 1rem; opacity: .4; }
-    .empty h3 { font-family: var(--serif); font-size: 1.4rem; margin-bottom: .5rem; color: var(--text); }
-    .empty p { font-size: .8rem; max-width: 300px; margin: 0 auto 1.5rem; }
+/* ─── Toast ─────────────────────────────────── */
+#toast{
+  position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(8px);
+  background:var(--ink);color:var(--paper);
+  border-radius:99px;padding:.55rem 1.25rem;font-size:.72rem;letter-spacing:.04em;
+  opacity:0;transition:all .22s;pointer-events:none;z-index:999;white-space:nowrap;
+}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
-    /* ── Modal ── */
-    .modal-backdrop {
-      position: fixed; inset: 0;
-      background: rgba(0,0,0,.7);
-      backdrop-filter: blur(4px);
-      display: flex; align-items: center; justify-content: center;
-      z-index: 500;
-      animation: fadeIn .15s ease;
-    }
-    .modal {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r);
-      padding: 2rem;
-      width: min(520px, 92vw);
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-    .modal h2 {
-      font-family: var(--serif); font-size: 1.5rem;
-      margin-bottom: 1.5rem;
-    }
-    .modal-actions {
-      display: flex; justify-content: flex-end; gap: .5rem;
-      margin-top: 1.5rem; padding-top: 1.5rem;
-      border-top: 1px solid var(--border);
-    }
+/* ─── Empty / misc ─────────────────────────── */
+.big-btn{
+  width:100%;padding:1.1rem;font-size:.75rem;justify-content:center;
+  border-radius:var(--r);letter-spacing:.1em;
+}
+.nav-row{display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-top:1.5rem;padding-top:1.25rem;border-top:1.5px solid var(--border);}
+.badge-row{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1.5rem;}
+.badge{font-size:.62rem;letter-spacing:.06em;text-transform:uppercase;padding:.22rem .65rem;border-radius:99px;background:var(--paper2);border:1px solid var(--border);color:var(--ink-dim);}
+.badge.active{background:var(--gold-pale);border-color:rgba(184,145,58,.4);color:var(--gold);}
 
-    /* ── Toast ── */
-    #toast {
-      position: fixed; bottom: 2rem; right: 2rem;
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: var(--r-sm); padding: .7rem 1.2rem;
-      font-size: .75rem; color: var(--text);
-      opacity: 0; transform: translateY(8px);
-      transition: all .25s; pointer-events: none; z-index: 999;
-    }
-    #toast.show { opacity: 1; transform: none; }
-
-    /* ── Section headers ── */
-    .section-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 1rem;
-    }
-    .section-title {
-      font-size: .65rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim);
-    }
-
-    /* ── Reference sidebar chip ── */
-    .coalition-ref {
-      display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;
-    }
-    .ref-card {
-      flex: 1; min-width: 200px;
-      background: var(--surface2); border: 1px solid var(--border);
-      border-radius: var(--r); padding: 1rem;
-    }
-    .ref-card-title {
-      font-size: .65rem; letter-spacing: .1em; text-transform: uppercase;
-      margin-bottom: .75rem;
-    }
-    .ref-card-title.blue { color: var(--blue); }
-    .ref-card-title.white { color: var(--white-coal); }
-    .ref-tag {
-      display: inline-block; font-size: .65rem;
-      padding: .2rem .55rem; border-radius: 99px;
-      margin: .2rem; letter-spacing: .04em;
-    }
-    .ref-tag.blue { background: var(--blue-glow); color: var(--blue); border: 1px solid var(--blue-dim); }
-    .ref-tag.white { background: rgba(232,232,232,.07); color: var(--white-coal); border: 1px solid #333; }
-
-    /* Responsive */
-    @media (max-width: 600px) {
-      main { padding: 1rem; }
-      header { padding: 1rem; }
-      .field-row { grid-template-columns: 1fr; }
-      .weight-row { grid-template-columns: 1fr 1fr; }
-    }
-  </style>
+@media(max-width:520px){
+  main{padding:1.25rem 1rem;}
+  header{padding:.8rem 1rem;}
+  .tabs{padding:0 1rem;}
+}
+</style>
 </head>
 <body>
 
 <header>
   <div class="logo">
-    <div class="logo-icon">⚖</div>
-    <div>
-      <h1>Parliament</h1>
-      <span>Decision Dashboard</span>
-    </div>
+    <h1>Parliament</h1>
+    <div class="logo-sep"></div>
+    <span class="logo-sub">Inner Discussion Group</span>
   </div>
-  <div class="header-actions">
-    <button class="btn btn-sm" onclick="exportData()">↑ Export</button>
-    <label class="btn btn-sm" style="cursor:pointer">
-      ↓ Import
-      <input type="file" accept=".json" style="display:none" onchange="importData(event)" />
-    </label>
-    <button class="btn btn-primary btn-sm" onclick="openNewDecisionModal()">+ New Decision</button>
-  </div>
+  <span class="pwa-hint">Personal · Offline</span>
 </header>
 
+<nav class="tabs">
+  <button class="tab-btn active" data-tab="session" onclick="switchTab('session')">This Session</button>
+  <button class="tab-btn" data-tab="voting" onclick="switchTab('voting')">Voting</button>
+</nav>
+
 <main>
-  <!-- Tab Nav -->
-  <nav class="tab-nav">
-    <button class="tab-btn active" onclick="switchTab('overview')">Overview</button>
-    <button class="tab-btn" onclick="switchTab('history')">History</button>
-    <button class="tab-btn" onclick="switchTab('reference')">Reference</button>
-  </nav>
-
-  <!-- Overview Tab -->
-  <div id="tab-overview" class="view active">
-    <div id="overview-content"></div>
+  <!-- ═══════════════ SESSION TAB ═══════════════ -->
+  <div id="tab-session" class="view active">
+    <div id="session-content"></div>
   </div>
 
-  <!-- History Tab -->
-  <div id="tab-history" class="view">
-    <div class="section-header">
-      <span class="section-title">All Decisions</span>
-      <div style="display:flex;gap:.5rem">
-        <button class="btn btn-sm" onclick="filterHistory('all')" id="filter-all" style="border-color:var(--blue);color:var(--blue)">All</button>
-        <button class="btn btn-sm" onclick="filterHistory('active')" id="filter-active">Active</button>
-        <button class="btn btn-sm" onclick="filterHistory('archived')" id="filter-archived">Archived</button>
-      </div>
-    </div>
-    <div id="history-list" class="history-list"></div>
-  </div>
-
-  <!-- Reference Tab -->
-  <div id="tab-reference" class="view">
-    <div style="margin-bottom:1.5rem">
-      <h2 style="font-size:1.6rem;margin-bottom:.4rem">Coalition Thinking Modes</h2>
-      <p style="font-size:.78rem;color:var(--text-dim)">Two ways your internal parliament processes decisions.</p>
-    </div>
-    <div class="coalition-ref">
-      <div class="ref-card">
-        <div class="ref-card-title blue">🔵 Blue Coalition — The Engineers</div>
-        <div>
-          <span class="ref-tag blue">Systems Thinking</span>
-          <span class="ref-tag blue">Execution-Oriented</span>
-          <span class="ref-tag blue">Evidence-Based</span>
-          <span class="ref-tag blue">Optimization-Focused</span>
-          <span class="ref-tag blue">Results-Driven</span>
-          <span class="ref-tag blue">Structure & Planning</span>
-          <span class="ref-tag blue">Efficiency & Measurability</span>
-        </div>
-      </div>
-      <div class="ref-card">
-        <div class="ref-card-title white">⚪ White Coalition — The Philosophers</div>
-        <div>
-          <span class="ref-tag white">Values Thinking</span>
-          <span class="ref-tag white">Intuition-Guided</span>
-          <span class="ref-tag white">Relational-Focused</span>
-          <span class="ref-tag white">Humanity-Centered</span>
-          <span class="ref-tag white">Emotional Sovereignty</span>
-          <span class="ref-tag white">Kindness & Integrity</span>
-          <span class="ref-tag white">Quality of Experience</span>
-        </div>
-      </div>
-    </div>
-    <div class="card" style="font-size:.8rem;color:var(--text-dim);line-height:1.7">
-      <strong style="color:var(--text);font-family:var(--serif);font-size:1rem">How to use weights</strong><br><br>
-      Assign a weight (integer) to each coalition per category based on how strongly that side's logic applies. A higher Blue weight means the engineering/analytical perspective dominates for that domain. A higher White weight means the values/intuitive perspective leads.<br><br>
-      The <em>General Weight</em> reflects the overall parliament result — you can set this independently to capture a holistic gut check.
-    </div>
+  <!-- ═══════════════ VOTING TAB ═══════════════ -->
+  <div id="tab-voting" class="view">
+    <div id="voting-content"></div>
   </div>
 </main>
-
-<!-- New/Edit Decision Modal -->
-<div id="decision-modal" class="modal-backdrop" style="display:none">
-  <div class="modal">
-    <h2 id="modal-title">New Decision</h2>
-    <div class="field" style="margin-bottom:1rem">
-      <label>Decision Title</label>
-      <input type="text" id="modal-name" placeholder="e.g. Should I take the new job offer?" />
-    </div>
-    <div class="field" style="margin-bottom:1.5rem">
-      <label>Notes (optional)</label>
-      <textarea id="modal-notes" rows="2" placeholder="Context, deadline, anything relevant..." style="resize:vertical"></textarea>
-    </div>
-    <div class="modal-actions">
-      <button class="btn" onclick="closeModal('decision-modal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveDecision()">Create Decision</button>
-    </div>
-  </div>
-</div>
-
-<!-- Category Edit Modal -->
-<div id="category-modal" class="modal-backdrop" style="display:none">
-  <div class="modal">
-    <h2>Edit Categories</h2>
-    <p style="font-size:.75rem;color:var(--text-dim);margin-bottom:1.25rem">Add, rename, or remove categories. Changes apply to this decision only.</p>
-    <div id="category-editor-list"></div>
-    <button class="btn btn-sm" style="margin-top:1rem" onclick="addCategoryRow()">+ Add Category</button>
-    <div class="modal-actions">
-      <button class="btn" onclick="closeModal('category-modal')">Cancel</button>
-      <button class="btn btn-primary" onclick="saveCategories()">Save Categories</button>
-    </div>
-  </div>
-</div>
-
-<!-- View Decision Modal (from history) -->
-<div id="view-modal" class="modal-backdrop" style="display:none">
-  <div class="modal" id="view-modal-content"></div>
-</div>
 
 <div id="toast"></div>
 
 <script>
-// ── State ──
-let state = {
-  decisions: [],
-  activeId: null
+/* ═══════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════ */
+let P = null; // Parliament — null if not formed
+// P shape: { thoughts:[{name,weight}], fields:[{name,seats:{[thoughtName]:n}}] }
+
+let sessionStep = 0; // 0=home, 1=general, 2=fields, 3=seats, 4=confirm, 5=formed
+
+// working state during formation
+let draft = {
+  thoughts: [],         // [{name, weight}]
+  fieldNames: ['','',''],  // 3 specialised field names
+  seats: {}             // { fieldName: { thoughtName: n } }
 };
 
-const DEFAULT_CATEGORIES = ['Interpersonal', 'Health & Leisure', 'Finance'];
+// voting working state
+let vote = null;
+// vote shape: { title, fields:Set, votes:{thoughtName:'for'|'against'|null} }
 
-function makeDecision(name, notes = '') {
-  return {
-    id: Date.now().toString(),
-    name,
-    notes,
-    createdAt: new Date().toISOString(),
-    archived: false,
-    generalBlue: 0,
-    generalWhite: 0,
-    categories: DEFAULT_CATEGORIES.map(n => ({ name: n, blue: 0, white: 0 }))
-  };
-}
-
-// ── Persistence ──
-function save() {
-  localStorage.setItem('parliament_state', JSON.stringify(state));
-}
-function load() {
-  try {
-    const raw = localStorage.getItem('parliament_state');
-    if (raw) state = JSON.parse(raw);
-  } catch(e) {}
-  // migrate
-  if (!state.decisions) state.decisions = [];
-  if (!state.activeId && state.decisions.length > 0) state.activeId = state.decisions[0].id;
-}
-
-// ── Export / Import ──
-function exportData() {
-  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `parliament-${Date.now()}.json`;
-  a.click(); URL.revokeObjectURL(url);
-  toast('Data exported');
-}
-function importData(e) {
-  const file = e.target.files[0]; if (!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    try {
-      const imported = JSON.parse(ev.target.result);
-      if (!imported.decisions) throw new Error();
-      state = imported;
-      save(); renderAll();
-      toast('Data imported successfully');
-    } catch { toast('Invalid JSON file'); }
-  };
-  reader.readAsText(file);
-  e.target.value = '';
-}
-
-// ── Active Decision helpers ──
-function getActive() {
-  return state.decisions.find(d => d.id === state.activeId) || null;
-}
-function setActive(id) {
-  state.activeId = id; save(); renderAll();
-}
-
-// ── Tabs ──
-let currentTab = 'overview';
-function switchTab(tab) {
-  currentTab = tab;
-  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.remove('active'));
-  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  const idx = ['overview','history','reference'].indexOf(tab);
-  document.querySelectorAll('.tab-btn')[idx].classList.add('active');
-  document.getElementById('tab-' + tab).classList.add('active');
-  if (tab === 'history') renderHistory();
-}
-
-// ── Render Overview ──
-function renderOverview() {
-  const el = document.getElementById('overview-content');
-  const d = getActive();
-
-  if (!d) {
-    el.innerHTML = `
-      <div class="empty">
-        <div class="empty-icon">⚖</div>
-        <h3>No active decision</h3>
-        <p>Create your first decision to begin deliberation.</p>
-        <button class="btn btn-primary" onclick="openNewDecisionModal()">+ New Decision</button>
-      </div>`;
-    return;
-  }
-
-  const totalBlue = d.generalBlue;
-  const totalWhite = d.generalWhite;
-  const total = totalBlue + totalWhite;
-  const pct = total === 0 ? 50 : Math.round((totalBlue / total) * 100);
-  let verdictLabel = 'Tied', verdictClass = 'tied';
-  if (totalBlue > totalWhite) { verdictLabel = 'Blue Leads'; verdictClass = 'blue'; }
-  if (totalWhite > totalBlue) { verdictLabel = 'White Leads'; verdictClass = 'white'; }
-
-  const catCards = d.categories.map((c, i) => `
-    <div class="category-card">
-      <div class="category-name">${esc(c.name)}</div>
-      <div class="category-scores">
-        <span class="cat-score blue">${c.blue}</span>
-        <span class="cat-divider">·</span>
-        <span class="cat-score white">${c.white}</span>
-      </div>
-      <div style="margin-top:.5rem;font-size:.6rem;color:var(--text-dim)">
-        Blue · White
-      </div>
-      <div class="cat-actions">
-        <div class="stepper">
-          <button class="stepper-btn" onclick="adjustCat(${i},'blue',-1)">−</button>
-          <input type="number" value="${c.blue}" onchange="setCat(${i},'blue',this.value)" style="width:48px;text-align:center;font-size:.78rem;padding:.3rem .4rem" />
-          <button class="stepper-btn" onclick="adjustCat(${i},'blue',1)">+</button>
-          <span style="font-size:.6rem;color:var(--blue);margin-left:.2rem">B</span>
-        </div>
-        <div class="stepper" style="margin-top:.4rem">
-          <button class="stepper-btn" onclick="adjustCat(${i},'white',-1)">−</button>
-          <input type="number" value="${c.white}" onchange="setCat(${i},'white',this.value)" style="width:48px;text-align:center;font-size:.78rem;padding:.3rem .4rem" />
-          <button class="stepper-btn" onclick="adjustCat(${i},'white',1)">+</button>
-          <span style="font-size:.6rem;color:var(--white-dim);margin-left:.2rem">W</span>
-        </div>
-      </div>
-    </div>
-  `).join('');
-
-  const otherDecisions = state.decisions.filter(x => x.id !== d.id && !x.archived);
-
-  el.innerHTML = `
-    <div class="overview-header">
-      <div class="decision-title-group">
-        <div class="decision-label">Active Decision</div>
-        <div class="decision-title">${esc(d.name)}</div>
-        ${d.notes ? `<div class="decision-date" style="margin-top:.5rem;font-style:italic">${esc(d.notes)}</div>` : ''}
-        <div class="decision-date">Created ${fmtDate(d.createdAt)}</div>
-      </div>
-      <div style="display:flex;flex-direction:column;gap:.4rem;align-items:flex-end">
-        ${otherDecisions.length > 0 ? `
-          <select class="btn btn-sm" style="cursor:pointer" onchange="setActive(this.value)">
-            <option value="${d.id}">Current decision</option>
-            ${otherDecisions.map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join('')}
-          </select>` : ''}
-        <button class="btn btn-sm" onclick="archiveActive()">${d.archived ? 'Unarchive' : 'Archive'}</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteActive()">Delete</button>
-      </div>
-    </div>
-
-    <!-- General Weight -->
-    <div class="general-weight-card">
-      <div class="weight-card-label">General Weight</div>
-      <div class="weight-row">
-        <div class="weight-block">
-          <div class="weight-score blue">${d.generalBlue}</div>
-          <div class="coalition-name">🔵 Blue Coalition</div>
-          <div class="coalition-desc">The Engineers</div>
-          <div class="stepper" style="margin-top:.75rem">
-            <button class="stepper-btn" onclick="adjustGeneral('blue',-1)">−</button>
-            <input type="number" value="${d.generalBlue}" onchange="setGeneral('blue',this.value)" style="width:55px;text-align:center;font-size:.8rem;padding:.35rem .4rem" />
-            <button class="stepper-btn" onclick="adjustGeneral('blue',1)">+</button>
-          </div>
-        </div>
-        <div class="weight-block">
-          <div class="weight-score white">${d.generalWhite}</div>
-          <div class="coalition-name">⚪ White Coalition</div>
-          <div class="coalition-desc">The Philosophers</div>
-          <div class="stepper" style="margin-top:.75rem">
-            <button class="stepper-btn" onclick="adjustGeneral('white',-1)">−</button>
-            <input type="number" value="${d.generalWhite}" onchange="setGeneral('white',this.value)" style="width:55px;text-align:center;font-size:.8rem;padding:.35rem .4rem" />
-            <button class="stepper-btn" onclick="adjustGeneral('white',1)">+</button>
-          </div>
-        </div>
-      </div>
-      <div class="verdict-bar" style="margin-top:1.5rem">
-        <div class="verdict-fill" style="width:${pct}%"></div>
-      </div>
-      <div class="verdict-labels">
-        <span>🔵 Blue</span>
-        <span class="verdict-chip ${verdictClass}">${verdictLabel}</span>
-        <span>White ⚪</span>
-      </div>
-    </div>
-
-    <!-- Categories -->
-    <div class="section-header">
-      <span class="section-title">Category Weights</span>
-      <button class="btn btn-sm" onclick="openCategoryModal()">Edit Categories</button>
-    </div>
-    ${d.categories.length === 0
-      ? `<div style="color:var(--text-dim);font-size:.8rem;padding:1rem 0">No categories yet. Click "Edit Categories" to add some.</div>`
-      : `<div class="categories-grid">${catCards}</div>`
+/* ═══════════════════════════════════════════════
+   PERSIST
+═══════════════════════════════════════════════ */
+function save(){localStorage.setItem('parl_v4',JSON.stringify({P,sessionStep,draft}));}
+function load(){
+  try{
+    const raw=localStorage.getItem('parl_v4');
+    if(raw){
+      const d=JSON.parse(raw);
+      P=d.P||null;
+      sessionStep=d.sessionStep||0;
+      draft=d.draft||{thoughts:[],fieldNames:['','',''],seats:{}};
     }
-  `;
+  }catch(e){}
+  // ensure defaults
+  if(!draft.thoughts) draft.thoughts=[];
+  if(!draft.fieldNames||draft.fieldNames.length<3) draft.fieldNames=['','',''];
+  if(!draft.seats) draft.seats={};
+  // if formed, skip to formed step
+  if(P) sessionStep=5;
 }
 
-// ── Render History ──
-let historyFilter = 'all';
-function filterHistory(f) {
-  historyFilter = f;
-  ['all','active','archived'].forEach(x => {
-    const el = document.getElementById('filter-' + x);
-    el.style.borderColor = x === f ? 'var(--blue)' : 'var(--border)';
-    el.style.color = x === f ? 'var(--blue)' : 'var(--text-dim)';
+/* ═══════════════════════════════════════════════
+   UTILS
+═══════════════════════════════════════════════ */
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+let _tt;
+function toast(msg,dur=2200){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(_tt);_tt=setTimeout(()=>el.classList.remove('show'),dur);
+}
+function fmt(n){return typeof n==='number'&&!Number.isInteger(n)?n.toFixed(2).replace(/\.?0+$/,''):String(n);}
+
+/* ═══════════════════════════════════════════════
+   TABS
+═══════════════════════════════════════════════ */
+let currentTab='session';
+function switchTab(tab){
+  currentTab=tab;
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='tab-'+tab));
+  if(tab==='session') renderSession();
+  if(tab==='voting') renderVoting();
+}
+
+/* ═══════════════════════════════════════════════
+   SESSION RENDERER (step machine)
+═══════════════════════════════════════════════ */
+function renderSession(){
+  const el=document.getElementById('session-content');
+  if(sessionStep===0) el.innerHTML=renderStep0();
+  else if(sessionStep===1) el.innerHTML=renderStep1();
+  else if(sessionStep===2) el.innerHTML=renderStep2();
+  else if(sessionStep===3) el.innerHTML=renderStep3();
+  else if(sessionStep===4) el.innerHTML=renderStep4();
+  else if(sessionStep===5) el.innerHTML=renderStep5();
+  attachListeners();
+}
+
+function stepPips(current){
+  const steps=['Thoughts','Fields','Seats','Confirm'];
+  return `<div class="step-nav">
+    ${steps.map((s,i)=>{
+      const si=i+1;
+      const done=current>si;
+      const active=current===si;
+      return `<div class="step-pip${done?' done':active?' active':''}">
+        ${s}${done?'':''}</div>`;
+    }).join('')}
+  </div>`;
+}
+
+/* Step 0: Home */
+function renderStep0(){
+  return `
+    <span class="eyebrow">Your Inner Parliament</span>
+    <h2 class="page-title">Welcome back.</h2>
+    <p class="page-sub">Form your inner discussion group to begin deliberating decisions with intention. Your parliament holds your thoughts as parties, each with their own weight and voice.</p>
+    <button class="btn btn-ink big-btn" onclick="goStep(1)">Form Your Inner Discussion Group</button>`;
+}
+
+/* Step 1: General weights */
+function renderStep1(){
+  const rows=draft.thoughts.map((t,i)=>`
+    <div class="thought-row" id="tr-${i}">
+      <span class="thought-name">${esc(t.name)}</span>
+      <input type="number" class="fi" value="${t.weight}" min="0"
+        style="width:70px;text-align:center;"
+        oninput="draft.thoughts[${i}].weight=Math.max(0,parseInt(this.value)||0);save();"
+        onchange="save();"/>
+      <button class="thought-remove" onclick="removethought(${i})" title="Remove">✕</button>
+    </div>`).join('');
+
+  const canNext=draft.thoughts.length>=1&&draft.thoughts.every(t=>t.weight>=0);
+
+  return `
+    ${stepPips(1)}
+    <span class="eyebrow">Step 1 of 4</span>
+    <h2 class="page-title">Assign General Weight</h2>
+    <p class="page-sub">Name your thoughts and assign each a general weight — how much influence does this part of you carry overall?</p>
+
+    <div id="thought-list">${rows}</div>
+
+    <div style="display:flex;align-items:center;gap:.65rem;margin-bottom:1.5rem;">
+      <input class="fi" type="text" id="new-thought-in" placeholder="Name this thought…" style="flex:1;"
+        onkeydown="if(event.key==='Enter')addThought();"/>
+      <button class="btn btn-gold btn-sm" onclick="addThought()">+ Add</button>
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-ghost" onclick="goStep(0)">← Back</button>
+      <button class="btn btn-ink${canNext?'':''}" ${canNext?'':'disabled'} onclick="goStep(2)">Next →</button>
+    </div>`;
+}
+
+/* Step 2: Field names */
+function renderStep2(){
+  const inputs=draft.fieldNames.map((f,i)=>`
+    <div class="field">
+      <label>Prioritised Field ${i+1}</label>
+      <input class="fi" type="text" value="${esc(f)}" placeholder="e.g. Career, Relationships, Health…"
+        oninput="draft.fieldNames[${i}]=this.value.trim();save();updateStep2Btn();"
+        />
+    </div>`).join('');
+
+  const canNext=draft.fieldNames.every(f=>f.trim().length>0);
+
+  return `
+    ${stepPips(2)}
+    <span class="eyebrow">Step 2 of 4</span>
+    <h2 class="page-title">Name Specialised Fields</h2>
+    <p class="page-sub">Define three prioritised fields or issues that matter to your decisions. These give your parliament a specialised lens to weigh in on.</p>
+
+    ${inputs}
+
+    <div class="nav-row">
+      <button class="btn btn-ghost" onclick="goStep(1)">← Back</button>
+      <button id="step2-next" class="btn btn-ink" ${canNext?'':'disabled'} onclick="initSeatsAndGoStep3()">Next →</button>
+    </div>`;
+}
+
+function updateStep2Btn(){
+  const btn=document.getElementById('step2-next');
+  if(!btn) return;
+  btn.disabled=!draft.fieldNames.every(f=>f.trim().length>0);
+}
+
+/* Step 3: Seat distribution */
+function renderStep3(){
+  const blocks=draft.fieldNames.map((fname,fi)=>{
+    const seatMap=draft.seats[fname]||{};
+    const totalAssigned=Object.values(seatMap).reduce((a,b)=>a+b,0);
+    const remaining=3-totalAssigned;
+    const rows=draft.thoughts.map(t=>{
+      const assigned=seatMap[t.name]||0;
+      return `<div class="seat-row">
+        <span class="seat-thought-name">${esc(t.name)}</span>
+        <div class="seat-stepper">
+          <button class="s-btn" ${assigned<=0?'disabled':''} onclick="adjSeat('${esc(fname)}','${esc(t.name)}',-1)">−</button>
+          <span class="seat-val">${assigned}</span>
+          <button class="s-btn" ${remaining<=0&&assigned<3?'disabled':''} onclick="adjSeat('${esc(fname)}','${esc(t.name)}',1)">+</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    const pips=Array.from({length:3},(_,k)=>
+      `<span${k<totalAssigned?'':' class="empty"'}></span>`).join('');
+
+    return `<div class="seat-field">
+      <div class="seat-field-name">${esc(fname)}</div>
+      <div class="seat-counter">
+        <div class="seat-dot">${pips}</div>
+        <span class="${remaining===0?'ok':remaining<0?'over':''}">
+          ${totalAssigned}/3 seats assigned${remaining>0?` · ${remaining} remaining`:''}
+        </span>
+      </div>
+      ${rows}
+    </div>`;
+  }).join('');
+
+  const allDone=draft.fieldNames.every(fname=>{
+    const s=draft.seats[fname]||{};
+    return Object.values(s).reduce((a,b)=>a+b,0)===3;
   });
-  renderHistory();
-}
-function renderHistory() {
-  const el = document.getElementById('history-list');
-  let decisions = [...state.decisions].reverse();
-  if (historyFilter === 'active') decisions = decisions.filter(d => !d.archived);
-  if (historyFilter === 'archived') decisions = decisions.filter(d => d.archived);
 
-  if (decisions.length === 0) {
-    el.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><h3>Nothing here</h3><p>No decisions match this filter.</p></div>`;
+  return `
+    ${stepPips(3)}
+    <span class="eyebrow">Step 3 of 4</span>
+    <h2 class="page-title">Distribute Seats</h2>
+    <p class="page-sub">Each specialised field has <strong>3 seats</strong> to distribute among your thoughts. Assign all 3 to proceed.</p>
+
+    ${blocks}
+
+    <div class="nav-row">
+      <button class="btn btn-ghost" onclick="goStep(2)">← Back</button>
+      <button class="btn btn-ink" ${allDone?'':'disabled'} onclick="goStep(4)">Review →</button>
+    </div>`;
+}
+
+/* Step 4: Confirm */
+function renderStep4(){
+  const thoughtRows=draft.thoughts.map(t=>`
+    <div class="summary-thought-row">
+      <span>${esc(t.name)}</span>
+      <span style="font-family:var(--serif);font-size:1.1rem;color:var(--gold);">${t.weight}</span>
+    </div>`).join('');
+
+  const fieldBlocks=draft.fieldNames.map(fname=>{
+    const smap=draft.seats[fname]||{};
+    const rows=Object.entries(smap).filter(([,v])=>v>0).map(([tname,seats])=>`
+      <div class="summary-field-row">
+        <span>${esc(tname)}</span>
+        <span style="font-family:var(--serif);color:var(--gold);">${seats} seat${seats!==1?'s':''}</span>
+      </div>`).join('');
+    return `<div class="summary-field-block">
+      <div class="summary-field-header">${esc(fname)}</div>
+      ${rows}
+    </div>`;
+  }).join('');
+
+  return `
+    ${stepPips(4)}
+    <span class="eyebrow">Step 4 of 4</span>
+    <h2 class="page-title">Confirm Formation</h2>
+    <p class="page-sub">Review your parliament's composition before forming. Once formed, you'll need to dissolve the group to make changes.</p>
+
+    <div class="card" style="margin-bottom:1rem;">
+      <div class="card-header"><div class="card-title">Thoughts & General Weights</div></div>
+      <div style="border:1px solid var(--border);border-radius:var(--r-sm);overflow:hidden;">
+        ${thoughtRows}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">Specialised Fields & Seats</div></div>
+      ${fieldBlocks}
+    </div>
+
+    <div class="nav-row">
+      <button class="btn btn-ghost" onclick="goStep(3)">← Back</button>
+      <button class="btn btn-gold" onclick="formParliament()">🏛 Form Parliament</button>
+    </div>`;
+}
+
+/* Step 5: Formed */
+function renderStep5(){
+  if(!P) return renderStep0();
+
+  const thoughtChips=P.thoughts.map(t=>`
+    <span class="ps-thought-chip">${esc(t.name)}<span class="chip-w">${t.weight}</span></span>`).join('');
+
+  const fieldSummary=P.fields.map(f=>{
+    const rows=Object.entries(f.seats).filter(([,v])=>v>0).map(([tname,s])=>
+      `<span style="font-size:.75rem;color:var(--ink-dim);">${esc(tname)} <span style="color:var(--gold);font-family:var(--serif);">${s}</span></span>`
+    ).join('<span style="color:var(--border-dark);margin:0 .3rem;">·</span>');
+    return `<div style="margin-bottom:.6rem;">
+      <div style="font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-mid);margin-bottom:.25rem;">${esc(f.name)}</div>
+      <div style="display:flex;flex-wrap:wrap;gap:.35rem;align-items:center;">${rows}</div>
+    </div>`;
+  }).join('');
+
+  return `
+    <div class="parliament-status">
+      <div class="ps-left">
+        <div class="ps-label">Parliament in Session</div>
+        <div style="font-family:var(--serif);font-size:1.05rem;color:var(--paper);">
+          ${P.thoughts.length} thought${P.thoughts.length!==1?'s':''} · ${P.fields.length} fields
+        </div>
+        <div class="ps-thoughts">${thoughtChips}</div>
+      </div>
+      <button class="btn btn-danger btn-sm" onclick="showDissolveConfirm()">Dissolve</button>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><div class="card-title">General Weights</div></div>
+      ${P.thoughts.map(t=>`
+        <div class="summary-thought-row">
+          <span>${esc(t.name)}</span>
+          <span style="font-family:var(--serif);font-size:1.1rem;color:var(--gold);">${t.weight}</span>
+        </div>`).join('')}
+    </div>
+
+    <div class="card" style="margin-top:.75rem;">
+      <div class="card-header"><div class="card-title">Specialised Fields</div></div>
+      ${fieldSummary}
+    </div>
+
+    <div id="dissolve-confirm" style="display:none;margin-top:1rem;padding:1rem 1.1rem;background:var(--red-pale);border:1.5px solid rgba(192,57,43,.3);border-radius:var(--r);">
+      <p style="font-size:.82rem;color:var(--ink);margin-bottom:.85rem;">Are you sure? This will clear all weights and seat assignments.</p>
+      <div style="display:flex;gap:.5rem;">
+        <button class="btn btn-danger btn-sm" onclick="dissolve()">Yes, Dissolve</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('dissolve-confirm').style.display='none'">Cancel</button>
+      </div>
+    </div>
+
+    <div style="margin-top:1.5rem;text-align:center;">
+      <p style="font-size:.75rem;color:var(--ink-mid);margin-bottom:1rem;">Parliament is ready. Head to the Voting tab to deliberate.</p>
+      <button class="btn btn-gold" onclick="switchTab('voting')">Go to Voting →</button>
+    </div>`;
+}
+
+/* ═══════════════════════════════════════════════
+   SESSION ACTIONS
+═══════════════════════════════════════════════ */
+function goStep(n){
+  sessionStep=n;
+  save();
+  renderSession();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function addThought(){
+  const inp=document.getElementById('new-thought-in');
+  if(!inp) return;
+  const name=inp.value.trim();
+  if(!name){inp.focus();return;}
+  if(draft.thoughts.find(t=>t.name.toLowerCase()===name.toLowerCase())){
+    toast('A thought with that name already exists.');return;
+  }
+  draft.thoughts.push({name,weight:1});
+  inp.value='';
+  save();
+  renderSession();
+  document.getElementById('new-thought-in')?.focus();
+}
+
+function removethought(i){
+  const name=draft.thoughts[i]?.name;
+  draft.thoughts.splice(i,1);
+  // remove from seats
+  if(name){
+    Object.keys(draft.seats).forEach(f=>{
+      delete draft.seats[f][name];
+    });
+  }
+  save();renderSession();
+}
+
+function initSeatsAndGoStep3(){
+  // ensure seat maps exist for all fields, with all thoughts
+  draft.fieldNames.forEach(fname=>{
+    if(!draft.seats[fname]) draft.seats[fname]={};
+    // add new thoughts with 0 seats
+    draft.thoughts.forEach(t=>{
+      if(draft.seats[fname][t.name]===undefined) draft.seats[fname][t.name]=0;
+    });
+    // remove old thoughts no longer present
+    const tnames=new Set(draft.thoughts.map(t=>t.name));
+    Object.keys(draft.seats[fname]).forEach(k=>{if(!tnames.has(k)) delete draft.seats[fname][k];});
+  });
+  // clean seats for removed/renamed fields
+  const fset=new Set(draft.fieldNames);
+  Object.keys(draft.seats).forEach(k=>{if(!fset.has(k)) delete draft.seats[k];});
+  goStep(3);
+}
+
+function adjSeat(fname,tname,delta){
+  if(!draft.seats[fname]) draft.seats[fname]={};
+  const cur=draft.seats[fname][tname]||0;
+  const total=Object.values(draft.seats[fname]).reduce((a,b)=>a+b,0);
+  if(delta>0&&total>=3) return; // max 3 seats per field
+  const nv=Math.max(0,cur+delta);
+  draft.seats[fname][tname]=nv;
+  save();renderSession();
+}
+
+function formParliament(){
+  P={
+    thoughts:draft.thoughts.map(t=>({...t})),
+    fields:draft.fieldNames.map(fname=>({
+      name:fname,
+      seats:{...draft.seats[fname]}
+    }))
+  };
+  sessionStep=5;
+  // reset draft
+  draft={thoughts:[],fieldNames:['','',''],seats:{}};
+  save();renderSession();
+  toast('Parliament formed! 🎉',3000);
+}
+
+function showDissolveConfirm(){
+  const el=document.getElementById('dissolve-confirm');
+  if(el) el.style.display='block';
+}
+
+function dissolve(){
+  P=null;sessionStep=0;
+  draft={thoughts:[],fieldNames:['','',''],seats:{}};
+  vote=null;
+  save();renderSession();renderVoting();
+  toast('Parliament dissolved.');
+}
+
+function attachListeners(){
+  // nothing extra needed — using inline handlers
+}
+
+/* ═══════════════════════════════════════════════
+   VOTING RENDERER
+═══════════════════════════════════════════════ */
+function renderVoting(){
+  const el=document.getElementById('voting-content');
+  if(!P){
+    el.innerHTML=`
+      <div class="vote-initiate">
+        <span class="eyebrow" style="justify-content:center;display:block;">Voting</span>
+        <h2 class="page-title" style="margin-bottom:.5rem;">No Parliament in Session</h2>
+        <p style="font-size:.82rem;color:var(--ink-dim);margin-bottom:1.5rem;">Form your inner discussion group first before initiating a vote.</p>
+        <button class="btn btn-gold" onclick="switchTab('session')">Go to This Session →</button>
+      </div>`;
     return;
   }
 
-  el.innerHTML = decisions.map(d => {
-    const b = d.generalBlue, w = d.generalWhite;
-    let vc = 'tied', vl = 'Tied';
-    if (b > w) { vc = 'blue'; vl = 'Blue'; }
-    if (w > b) { vc = 'white'; vl = 'White'; }
-    const isActive = d.id === state.activeId;
-    return `
-      <div class="history-item${d.archived ? ' archived' : ''}" onclick="openViewModal('${d.id}')">
-        <div class="history-info">
-          <div class="history-name">${esc(d.name)} ${isActive ? '<span style="font-family:var(--mono);font-size:.6rem;color:var(--blue);letter-spacing:.08em;vertical-align:middle"> ● ACTIVE</span>' : ''}</div>
-          <div class="history-meta">${fmtDate(d.createdAt)} · ${d.categories.length} categories${d.archived ? ' · Archived' : ''}</div>
-        </div>
-        <div class="history-verdict">
-          <span style="font-family:var(--serif);font-size:1.1rem;color:var(--blue)">${b}</span>
-          <span style="color:var(--text-dim);font-size:.8rem">·</span>
-          <span style="font-family:var(--serif);font-size:1.1rem;color:var(--white-coal)">${w}</span>
-          <span class="verdict-chip ${vc}">${vl}</span>
-        </div>
+  if(!vote){
+    el.innerHTML=`
+      <div class="vote-initiate">
+        <span class="eyebrow" style="display:block;text-align:center;">Parliament Ready</span>
+        <h2 class="page-title" style="margin-bottom:.5rem;">Cast a Vote</h2>
+        <p style="font-size:.82rem;color:var(--ink-dim);margin-bottom:1.5rem;">Initiate a vote to deliberate on a decision with your inner parliament.</p>
+        <button class="btn btn-gold big-btn" onclick="initVote()">Initiate a Vote</button>
       </div>`;
-  }).join('');
-}
-
-// ── View Modal ──
-function openViewModal(id) {
-  const d = state.decisions.find(x => x.id === id); if (!d) return;
-  const el = document.getElementById('view-modal-content');
-  const b = d.generalBlue, w = d.generalWhite;
-  let vc = 'tied', vl = 'Tied';
-  if (b > w) { vc = 'blue'; vl = 'Blue Leads'; }
-  if (w > b) { vc = 'white'; vl = 'White Leads'; }
-
-  const catRows = d.categories.map(c =>
-    `<tr style="border-bottom:1px solid var(--border)">
-      <td style="padding:.5rem .75rem;color:var(--text-dim);font-size:.75rem">${esc(c.name)}</td>
-      <td style="padding:.5rem .75rem;font-family:var(--serif);font-size:1.1rem;color:var(--blue)">${c.blue}</td>
-      <td style="padding:.5rem .75rem;font-family:var(--serif);font-size:1.1rem;color:var(--white-coal)">${c.white}</td>
-    </tr>`
-  ).join('');
-
-  el.innerHTML = `
-    <h2 style="margin-bottom:.4rem">${esc(d.name)}</h2>
-    ${d.notes ? `<p style="font-size:.78rem;color:var(--text-dim);margin-bottom:.75rem;font-style:italic">${esc(d.notes)}</p>` : ''}
-    <p style="font-size:.7rem;color:var(--text-dim);margin-bottom:1.5rem">${fmtDate(d.createdAt)}${d.archived ? ' · Archived' : ''}</p>
-    <div style="display:flex;gap:1.5rem;margin-bottom:1.5rem;align-items:center">
-      <div><div style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim)">General Blue</div>
-        <div style="font-family:var(--serif);font-size:2.5rem;color:var(--blue)">${b}</div></div>
-      <div><div style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim)">General White</div>
-        <div style="font-family:var(--serif);font-size:2.5rem;color:var(--white-coal)">${w}</div></div>
-      <span class="verdict-chip ${vc}" style="margin-left:auto">${vl}</span>
-    </div>
-    ${catRows ? `<table style="width:100%;border-collapse:collapse;margin-bottom:1rem">
-      <thead><tr style="border-bottom:1px solid var(--border)">
-        <th style="text-align:left;padding:.5rem .75rem;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);font-weight:400">Category</th>
-        <th style="text-align:left;padding:.5rem .75rem;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);font-weight:400">Blue</th>
-        <th style="text-align:left;padding:.5rem .75rem;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--white-dim);font-weight:400">White</th>
-      </tr></thead>
-      <tbody>${catRows}</tbody>
-    </table>` : ''}
-    <div class="modal-actions">
-      <button class="btn" onclick="closeModal('view-modal')">Close</button>
-      ${d.id !== state.activeId ? `<button class="btn btn-primary" onclick="setActive('${d.id}');closeModal('view-modal')">Set as Active</button>` : ''}
-    </div>
-  `;
-  document.getElementById('view-modal').style.display = 'flex';
-}
-
-// ── Decision CRUD ──
-let editingId = null;
-function openNewDecisionModal() {
-  editingId = null;
-  document.getElementById('modal-title').textContent = 'New Decision';
-  document.getElementById('modal-name').value = '';
-  document.getElementById('modal-notes').value = '';
-  document.getElementById('decision-modal').style.display = 'flex';
-  setTimeout(() => document.getElementById('modal-name').focus(), 50);
-}
-function saveDecision() {
-  const name = document.getElementById('modal-name').value.trim();
-  if (!name) { document.getElementById('modal-name').focus(); return; }
-  const notes = document.getElementById('modal-notes').value.trim();
-  const d = makeDecision(name, notes);
-  state.decisions.push(d);
-  state.activeId = d.id;
-  save(); closeModal('decision-modal'); renderAll();
-  toast('Decision created');
-}
-function archiveActive() {
-  const d = getActive(); if (!d) return;
-  d.archived = !d.archived;
-  save(); renderAll();
-  toast(d.archived ? 'Decision archived' : 'Decision unarchived');
-}
-function deleteActive() {
-  const d = getActive(); if (!d) return;
-  if (!confirm(`Delete "${d.name}"? This cannot be undone.`)) return;
-  state.decisions = state.decisions.filter(x => x.id !== d.id);
-  state.activeId = state.decisions.find(x => !x.archived)?.id || state.decisions[0]?.id || null;
-  save(); renderAll(); toast('Decision deleted');
-}
-
-// ── Weight adjustments ──
-function adjustGeneral(side, delta) {
-  const d = getActive(); if (!d) return;
-  const key = side === 'blue' ? 'generalBlue' : 'generalWhite';
-  d[key] = Math.max(0, d[key] + delta);
-  save(); renderOverview();
-}
-function setGeneral(side, val) {
-  const d = getActive(); if (!d) return;
-  const key = side === 'blue' ? 'generalBlue' : 'generalWhite';
-  d[key] = Math.max(0, parseInt(val) || 0);
-  save(); renderOverview();
-}
-function adjustCat(i, side, delta) {
-  const d = getActive(); if (!d) return;
-  d.categories[i][side] = Math.max(0, d.categories[i][side] + delta);
-  save(); renderOverview();
-}
-function setCat(i, side, val) {
-  const d = getActive(); if (!d) return;
-  d.categories[i][side] = Math.max(0, parseInt(val) || 0);
-  save(); renderOverview();
-}
-
-// ── Category Modal ──
-function openCategoryModal() {
-  const d = getActive(); if (!d) return;
-  renderCategoryEditor(d.categories);
-  document.getElementById('category-modal').style.display = 'flex';
-}
-function renderCategoryEditor(cats) {
-  const el = document.getElementById('category-editor-list');
-  el.innerHTML = cats.map((c, i) => `
-    <div class="category-editor-row" id="catrow-${i}">
-      <input class="cat-name-input" type="text" value="${esc(c.name)}" placeholder="Category name" id="catname-${i}" />
-      <button class="btn btn-danger btn-sm" onclick="removeCategoryRow(${i})">✕</button>
-    </div>
-  `).join('');
-}
-let tempCats = [];
-function addCategoryRow() {
-  const d = getActive(); if (!d) return;
-  // collect current names
-  const rows = document.querySelectorAll('[id^="catname-"]');
-  const cats = Array.from(rows).map((r, i) => {
-    const existing = d.categories[i] || { blue: 0, white: 0 };
-    return { name: r.value, blue: existing.blue, white: existing.white };
-  });
-  cats.push({ name: '', blue: 0, white: 0 });
-  renderCategoryEditor(cats);
-  // focus last
-  setTimeout(() => {
-    const last = document.querySelector('[id^="catname-"]:last-of-type') ||
-      document.getElementById('catname-' + (cats.length - 1));
-    if (last) last.focus();
-  }, 50);
-}
-function removeCategoryRow(i) {
-  document.getElementById('catrow-' + i)?.remove();
-  // re-index
-  const rows = document.querySelectorAll('[id^="catrow-"]');
-  rows.forEach((r, ni) => {
-    r.id = 'catrow-' + ni;
-    const inp = r.querySelector('input'); if (inp) inp.id = 'catname-' + ni;
-    const btn = r.querySelector('button'); if (btn) btn.setAttribute('onclick', `removeCategoryRow(${ni})`);
-  });
-}
-function saveCategories() {
-  const d = getActive(); if (!d) return;
-  const inputs = document.querySelectorAll('[id^="catname-"]');
-  const newCats = Array.from(inputs).map((inp, i) => {
-    const existing = d.categories[i] || { blue: 0, white: 0 };
-    return { name: inp.value.trim() || 'Unnamed', blue: existing.blue, white: existing.white };
-  }).filter(c => c.name);
-  d.categories = newCats;
-  save(); closeModal('category-modal'); renderOverview();
-  toast('Categories saved');
-}
-
-// ── Utilities ──
-function closeModal(id) { document.getElementById(id).style.display = 'none'; }
-function esc(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-function fmtDate(iso) {
-  const d = new Date(iso);
-  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
-}
-let toastTimer;
-function toast(msg) {
-  const el = document.getElementById('toast');
-  el.textContent = msg; el.classList.add('show');
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
-}
-function renderAll() {
-  renderOverview();
-  if (currentTab === 'history') renderHistory();
-}
-
-// ── Modal close on backdrop click ──
-document.querySelectorAll('.modal-backdrop').forEach(b => {
-  b.addEventListener('click', e => { if (e.target === b) b.style.display = 'none'; });
-});
-
-// ── Keyboard ──
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') document.querySelectorAll('.modal-backdrop').forEach(b => b.style.display = 'none');
-  if (e.key === 'Enter' && document.getElementById('decision-modal').style.display !== 'none') {
-    saveDecision();
+    return;
   }
-});
 
-// ── Init ──
-load();
-renderAll();
-</script>
-
-<!-- PWA Service Worker Registration -->
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
+  // vote in progress
+  el.innerHTML=renderVoteSession();
 }
+
+function initVote(){
+  vote={title:'',fields:new Set(),votes:{}};
+  P.thoughts.forEach(t=>vote.votes[t.name]=null);
+  renderVoting();
+}
+
+function renderVoteSession(){
+  // Step: title
+  if(!vote._step) vote._step=1;
+
+  if(vote._step===1) return renderVoteStep1();
+  if(vote._step===2) return renderVoteStep2();
+  if(vote._step===3) return renderVoteStep3();
+  if(vote._step===4) return renderVoteResult();
+  return '';
+}
+
+/* Vote step 1: title */
+function renderVoteStep1(){
+  return `<div class="vote-session">
+    <span class="eyebrow">Vote — Step 1 of 3</span>
+    <h2 class="page-title">What is being decided?</h2>
+    <p class="page-sub">Give this deliberation a clear title.</p>
+    <div class="field">
+      <label>Decision Title</label>
+      <input class="fi" type="text" id="vote-title-in" value="${esc(vote.title)}"
+        placeholder="e.g. Should I take the job offer?"
+        oninput="vote.title=this.value;updateVoteStep1Btn();"
+        onkeydown="if(event.key==='Enter'&&vote.title.trim()) goVoteStep(2);"/>
+    </div>
+    <div class="nav-row">
+      <button class="btn btn-ghost" onclick="cancelVote()">✕ Cancel</button>
+      <button class="btn btn-ink" id="vote-next-1" onclick="if(vote.title.trim())goVoteStep(2);"
+        ${vote.title.trim()?'':'disabled'}>Next →</button>
+    </div>
+  </div>`;
+}
+
+/* Vote step 2: select fields */
+function renderVoteStep2(){
+  const fieldPills=P.fields.map(f=>{
+    const sel=vote.fields.has(f.name);
+    return `<span class="badge${sel?' active':''}" style="cursor:pointer;font-size:.72rem;padding:.3rem .85rem;"
+      onclick="toggleVoteField('${esc(f.name)}')">${esc(f.name)}</span>`;
+  }).join('');
+
+  return `<div class="vote-session">
+    <span class="eyebrow">Vote — Step 2 of 3</span>
+    <h2 class="page-title" style="font-size:1.3rem;">${esc(vote.title)}</h2>
+    <p class="page-sub">Which specialised fields does this decision touch? Leave none selected to use general weights only.</p>
+
+    <div class="badge-row">${fieldPills}</div>
+
+    ${vote.fields.size>0?`
+      <div style="padding:.6rem .85rem;background:var(--paper2);border-radius:var(--r-sm);border:1px solid var(--border);font-size:.75rem;color:var(--ink-dim);margin-bottom:1rem;">
+        Selected: <strong style="color:var(--ink);">${[...vote.fields].map(f=>`<em>${esc(f)}</em>`).join(', ')}</strong>
+      </div>`:''}
+
+    <div class="nav-row">
+      <button class="btn btn-ghost" onclick="goVoteStep(1)">← Back</button>
+      <button class="btn btn-ink" onclick="goVoteStep(3)">Next →</button>
+    </div>
+  </div>`;
+}
+
+/* Vote step 3: cast votes */
+function renderVoteStep3(){
+  // compute effective weights
+  const weights=computeEffectiveWeights();
+
+  const rows=P.thoughts.map(t=>{
+    const v=vote.votes[t.name];
+    const w=weights[t.name]||0;
+    return `<div class="vote-thought-card">
+      <div class="vtc-left">
+        <div>
+          <div class="vtc-name">${esc(t.name)}</div>
+          <div style="font-size:.62rem;color:var(--ink-mid);margin-top:.1rem;">
+            Weight: <span style="font-family:var(--serif);color:var(--gold);">${fmt(w)}</span>
+          </div>
+        </div>
+      </div>
+      <div class="vtc-btns">
+        <button class="btn btn-for btn-sm${v==='for'?' active':''}" onclick="castVote('${esc(t.name)}','for')">✓ For</button>
+        <button class="btn btn-against btn-sm${v==='against'?' active':''}" onclick="castVote('${esc(t.name)}','against')">✗ Against</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  const allVoted=P.thoughts.every(t=>vote.votes[t.name]!==null);
+
+  return `<div class="vote-session">
+    <span class="eyebrow">Vote — Step 3 of 3</span>
+    <h2 class="page-title" style="font-size:1.3rem;">${esc(vote.title)}</h2>
+    ${vote.fields.size>0?`<p style="font-size:.75rem;color:var(--ink-dim);margin-bottom:1.25rem;">Fields: ${[...vote.fields].map(f=>`<em>${esc(f)}</em>`).join(', ')}</p>`:'<p style="font-size:.75rem;color:var(--ink-mid);margin-bottom:1.25rem;">Using general weights only.</p>'}
+
+    ${rows}
+
+    <div class="nav-row">
+      <button class="btn btn-ghost" onclick="goVoteStep(2)">← Back</button>
+      <button class="btn btn-gold" ${allVoted?'':'disabled'} onclick="goVoteStep(4)">Calculate Result →</button>
+    </div>
+  </div>`;
+}
+
+/* Vote step 4: result */
+function renderVoteResult(){
+  const weights=computeEffectiveWeights();
+  let forWeight=0, againstWeight=0;
+
+  P.thoughts.forEach(t=>{
+    const w=weights[t.name]||0;
+    if(vote.votes[t.name]==='for') forWeight+=w;
+    else againstWeight+=w;
+  });
+
+  const total=forWeight+againstWeight;
+  const forPct=total===0?0:(forWeight/total)*100;
+  const threshold=200/3; // 66.666...
+
+  let tier,tierClass,tBadgeClass,validity;
+  if(forPct<threshold){
+    tier='Not Passed';tierClass='not-passed';tBadgeClass='tb-np';
+    validity='The decision does not have the support of ²⁄₃ of the parliament.';
+  } else if(forPct<75){
+    tier='Tier 1 — Passed';tierClass='passed-t1';tBadgeClass='tb-t1';
+    validity='Effective for no more than <strong>7 days</strong>.';
+  } else if(forPct<100){
+    tier='Tier 2 — Passed';tierClass='passed-t2';tBadgeClass='tb-t2';
+    validity='Effective for no more than <strong>30 days</strong>.';
+  } else {
+    tier='Tier 3 — Passed';tierClass='passed-t3';tBadgeClass='tb-t3';
+    validity='Effective up to <strong>30 days</strong>, extendable to <strong>60 days</strong>.';
+  }
+
+  const breakdown=P.thoughts.map(t=>{
+    const w=weights[t.name]||0;
+    const v=vote.votes[t.name];
+    return `<div class="rb-row">
+      <span class="rb-name">${esc(t.name)}</span>
+      <span class="${v==='for'?'rb-vote-for':'rb-vote-ag'}">${v==='for'?'✓ For':'✗ Against'}</span>
+      <span class="rb-w" style="color:var(--gold);">${fmt(w)}</span>
+    </div>`;
+  }).join('');
+
+  const calcNote=vote.fields.size>0?`
+    <div style="font-size:.7rem;color:var(--ink-mid);margin-top:.85rem;padding:.6rem .8rem;background:var(--paper2);border-radius:var(--r-sm);border:1px solid var(--border);line-height:1.7;">
+      <strong>Weight formula:</strong> General + (sum of seats across selected fields ÷ number of fields)<br/>
+      ${P.thoughts.map(t=>{
+        const selectedFields=P.fields.filter(f=>vote.fields.has(f.name));
+        const totalSeats=selectedFields.reduce((acc,f)=>acc+(f.seats[t.name]||0),0);
+        const n=selectedFields.length;
+        const effective=t.weight+totalSeats/n;
+        return `<span style="color:var(--ink);">${esc(t.name)}</span>: ${t.weight} + ${totalSeats}/${n} = <strong style="color:var(--gold);">${fmt(effective)}</strong>`;
+      }).join(' &nbsp;|&nbsp; ')}
+    </div>`:'';
+
+  return `<div class="vote-session">
+    <span class="eyebrow">Result</span>
+    <h2 class="page-title" style="font-size:1.3rem;margin-bottom:1rem;">${esc(vote.title)}</h2>
+
+    <div class="result-banner ${tierClass}">
+      <div class="result-verdict">${tier}</div>
+      <div class="result-pct">${Math.round(forPct*10)/10}% in favour · ${fmt(forWeight)} of ${fmt(total)} seats</div>
+      <span class="result-tier-badge ${tBadgeClass}">${tier}</span>
+      <div class="validity-note" style="margin-top:.85rem;">${validity}</div>
+    </div>
+
+    <div class="result-breakdown">
+      <span class="summary-label">Vote Breakdown</span>
+      ${breakdown}
+    </div>
+
+    ${calcNote}
+
+    <div class="nav-row" style="margin-top:1.5rem;">
+      <button class="btn btn-ghost" onclick="goVoteStep(3)">← Revote</button>
+      <button class="btn btn-ink" onclick="resetVote()">New Vote</button>
+    </div>
+  </div>`;
+}
+
+/* ═══════════════════════════════════════════════
+   VOTING ACTIONS
+═══════════════════════════════════════════════ */
+function updateVoteStep1Btn(){
+  const btn=document.getElementById('vote-next-1');
+  if(!btn) return;
+  btn.disabled=!vote.title.trim();
+}
+
+function computeEffectiveWeights(){
+  const w={};
+  if(!P) return w;
+  const selectedFields=vote.fields.size>0
+    ? P.fields.filter(f=>vote.fields.has(f.name))
+    : [];
+  P.thoughts.forEach(t=>{
+    if(selectedFields.length===0){
+      w[t.name]=t.weight;
+    } else {
+      // avg of this thought's seats across each selected field
+      const totalSeats=selectedFields.reduce((acc,f)=>acc+(f.seats[t.name]||0),0);
+      const avgSeats=totalSeats/selectedFields.length;
+      w[t.name]=t.weight+avgSeats;
+    }
+  });
+  return w;
+}
+
+function toggleVoteField(fname){
+  if(vote.fields.has(fname)) vote.fields.delete(fname);
+  else vote.fields.add(fname);
+  renderVoting();
+}
+
+function castVote(tname,v){
+  vote.votes[tname]=v;
+  renderVoting();
+}
+
+function goVoteStep(n){
+  if(n===1&&vote._step===1){
+    // sync title from input
+    const inp=document.getElementById('vote-title-in');
+    if(inp) vote.title=inp.value;
+  }
+  vote._step=n;
+  renderVoting();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function cancelVote(){
+  vote=null;renderVoting();
+}
+function resetVote(){
+  vote=null;renderVoting();
+}
+
+/* ═══════════════════════════════════════════════
+   INIT
+═══════════════════════════════════════════════ */
+load();
+renderSession();
+renderVoting();
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
 </body>
 </html>
