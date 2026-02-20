@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Parliament — Decision Dashboard</title>
+  <meta name="theme-color" content="#0f0f13" />
+  <meta name="description" content="Delayed Decision-Making Mechanism — Personal Dashboard" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    /* ── Reset & Tokens ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0f0f13;
+      --surface: #16161d;
+      --surface2: #1e1e28;
+      --border: #2a2a38;
+      --blue: #2a5cff;
+      --blue-dim: #1a3aaa;
+      --blue-glow: rgba(42,92,255,.18);
+      --white-coal: #e8e8e8;
+      --white-dim: #888;
+      --text: #e4e4ef;
+      --text-dim: #777;
+      --accent: #7b61ff;
+      --danger: #ff4757;
+      --success: #2ed573;
+      --r: 10px;
+      --r-sm: 6px;
+      --serif: 'Cormorant Garamond', Georgia, serif;
+      --mono: 'DM Mono', monospace;
+    }
+    html { font-size: 16px; scroll-behavior: smooth; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      font-weight: 300;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Typography ── */
+    h1, h2, h3, h4 { font-family: var(--serif); font-weight: 500; letter-spacing: -.01em; }
+
+    /* ── Layout ── */
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 2rem;
+      border-bottom: 1px solid var(--border);
+      position: sticky;
+      top: 0;
+      background: rgba(15,15,19,.92);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+    }
+    .logo {
+      display: flex; align-items: center; gap: .75rem;
+    }
+    .logo-icon {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, var(--blue), var(--accent));
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem; color: #fff;
+    }
+    .logo h1 { font-size: 1.2rem; color: var(--text); }
+    .logo span { font-family: var(--mono); font-size: .65rem; color: var(--text-dim); letter-spacing: .1em; text-transform: uppercase; display: block; margin-top: 1px; }
+
+    .header-actions { display: flex; gap: .5rem; }
+
+    main { flex: 1; padding: 2rem; max-width: 1100px; margin: 0 auto; width: 100%; }
+
+    /* ── Buttons ── */
+    .btn {
+      font-family: var(--mono); font-size: .7rem; font-weight: 400;
+      letter-spacing: .06em; text-transform: uppercase;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--text-dim); padding: .45rem .9rem;
+      border-radius: var(--r-sm); cursor: pointer;
+      transition: all .2s; white-space: nowrap;
+    }
+    .btn:hover { border-color: var(--text-dim); color: var(--text); background: var(--surface); }
+    .btn-primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+    .btn-primary:hover { background: #3d6dff; border-color: #3d6dff; color: #fff; }
+    .btn-ghost { border-color: transparent; }
+    .btn-danger { border-color: var(--danger); color: var(--danger); }
+    .btn-danger:hover { background: var(--danger); color: #fff; }
+    .btn-sm { padding: .3rem .65rem; font-size: .65rem; }
+
+    /* ── Tab Nav ── */
+    .tab-nav {
+      display: flex; gap: .25rem;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2rem;
+    }
+    .tab-btn {
+      font-family: var(--mono); font-size: .7rem; letter-spacing: .08em;
+      text-transform: uppercase; background: none; border: none;
+      color: var(--text-dim); padding: .75rem 1.25rem;
+      cursor: pointer; border-bottom: 2px solid transparent;
+      margin-bottom: -1px; transition: all .2s;
+    }
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--blue); border-bottom-color: var(--blue); }
+
+    /* ── Views ── */
+    .view { display: none; animation: fadeIn .25s ease; }
+    .view.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 1.5rem;
+    }
+    .card-sm { padding: 1rem 1.25rem; }
+
+    /* ── Overview / Active Decision ── */
+    .overview-header {
+      display: flex; align-items: flex-start;
+      justify-content: space-between; gap: 1rem;
+      margin-bottom: 1.75rem;
+    }
+    .decision-title-group { flex: 1; }
+    .decision-label {
+      font-size: .65rem; letter-spacing: .12em; text-transform: uppercase;
+      color: var(--text-dim); margin-bottom: .4rem;
+    }
+    .decision-title {
+      font-family: var(--serif); font-size: 1.9rem;
+      line-height: 1.2; color: var(--text);
+    }
+    .decision-date { font-size: .7rem; color: var(--text-dim); margin-top: .4rem; }
+
+    /* Weight display */
+    .general-weight-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .weight-card-label {
+      font-size: .65rem; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--text-dim); margin-bottom: 1rem;
+    }
+    .weight-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+    }
+    .weight-block {
+      display: flex; flex-direction: column; gap: .5rem;
+    }
+    .weight-score {
+      font-family: var(--serif); font-size: 3.5rem; font-weight: 600;
+      line-height: 1;
+    }
+    .weight-score.blue { color: var(--blue); }
+    .weight-score.white { color: var(--white-coal); }
+    .coalition-name {
+      font-size: .65rem; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--text-dim);
+    }
+    .coalition-desc {
+      font-size: .7rem; color: var(--text-dim); font-style: italic; margin-top: .1rem;
+    }
+
+    /* Verdict bar */
+    .verdict-bar {
+      height: 6px; border-radius: 3px;
+      background: var(--border);
+      overflow: hidden; margin: 1rem 0;
+      position: relative;
+    }
+    .verdict-fill {
+      height: 100%; border-radius: 3px;
+      background: linear-gradient(90deg, var(--blue), var(--accent));
+      transition: width .6s cubic-bezier(.4,0,.2,1);
+    }
+    .verdict-labels {
+      display: flex; justify-content: space-between;
+      font-size: .6rem; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--text-dim); margin-top: .35rem;
+    }
+
+    /* Category grid */
+    .categories-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+    .category-card {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 1.25rem;
+      position: relative;
+    }
+    .category-name {
+      font-size: .65rem; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--text-dim); margin-bottom: .85rem;
+    }
+    .category-scores {
+      display: flex; gap: .6rem; align-items: center;
+    }
+    .cat-score {
+      font-family: var(--serif); font-size: 2rem; font-weight: 600;
+    }
+    .cat-score.blue { color: var(--blue); }
+    .cat-score.white { color: var(--white-coal); }
+    .cat-divider { color: var(--border); font-size: 1.2rem; }
+    .cat-actions {
+      display: flex; gap: .4rem;
+      margin-top: 1rem;
+    }
+
+    /* ── Edit Mode ── */
+    .edit-panel {
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .edit-panel-title {
+      font-size: .65rem; letter-spacing: .1em; text-transform: uppercase;
+      color: var(--text-dim); margin-bottom: 1.25rem;
+    }
+    .field-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    .field { display: flex; flex-direction: column; gap: .4rem; }
+    .field label {
+      font-size: .65rem; letter-spacing: .08em; text-transform: uppercase;
+      color: var(--text-dim);
+    }
+    .field input, .field textarea {
+      font-family: var(--mono); font-size: .8rem; font-weight: 300;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-sm); color: var(--text);
+      padding: .55rem .75rem; outline: none;
+      transition: border-color .2s;
+    }
+    .field input:focus, .field textarea:focus { border-color: var(--blue); }
+    .field input[type="number"] { -moz-appearance: textfield; }
+    .field input[type="number"]::-webkit-inner-spin-button { display: none; }
+    .stepper {
+      display: flex; align-items: center; gap: .5rem;
+    }
+    .stepper input {
+      width: 70px; text-align: center;
+    }
+    .stepper-btn {
+      width: 32px; height: 32px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-sm); color: var(--text);
+      font-size: 1rem; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all .2s; flex-shrink: 0;
+    }
+    .stepper-btn:hover { background: var(--surface2); border-color: var(--blue); color: var(--blue); }
+
+    /* ── Category Editor ── */
+    .category-editor-row {
+      display: flex; align-items: center; gap: .75rem;
+      padding: .75rem 0; border-bottom: 1px solid var(--border);
+    }
+    .category-editor-row:last-child { border-bottom: none; }
+    .cat-name-input {
+      flex: 1;
+      font-family: var(--mono); font-size: .8rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-sm); color: var(--text);
+      padding: .45rem .7rem; outline: none;
+      transition: border-color .2s;
+    }
+    .cat-name-input:focus { border-color: var(--blue); }
+
+    /* ── History View ── */
+    .history-list { display: flex; flex-direction: column; gap: .75rem; }
+    .history-item {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 1.25rem 1.5rem;
+      display: flex; align-items: center; gap: 1.25rem;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+    .history-item:hover { border-color: var(--blue); background: var(--surface2); }
+    .history-item.archived { opacity: .6; }
+    .history-info { flex: 1; }
+    .history-name {
+      font-family: var(--serif); font-size: 1.1rem; margin-bottom: .25rem;
+    }
+    .history-meta { font-size: .65rem; color: var(--text-dim); letter-spacing: .05em; }
+    .history-verdict {
+      display: flex; gap: .6rem; align-items: center;
+    }
+    .verdict-chip {
+      font-size: .65rem; letter-spacing: .08em; text-transform: uppercase;
+      padding: .3rem .7rem; border-radius: 99px;
+    }
+    .verdict-chip.blue { background: var(--blue-glow); color: var(--blue); border: 1px solid var(--blue-dim); }
+    .verdict-chip.white { background: rgba(232,232,232,.08); color: var(--white-coal); border: 1px solid #444; }
+    .verdict-chip.tied { background: rgba(123,97,255,.12); color: var(--accent); border: 1px solid rgba(123,97,255,.3); }
+
+    /* ── Empty State ── */
+    .empty {
+      text-align: center; padding: 4rem 2rem;
+      color: var(--text-dim);
+    }
+    .empty-icon { font-size: 2.5rem; margin-bottom: 1rem; opacity: .4; }
+    .empty h3 { font-family: var(--serif); font-size: 1.4rem; margin-bottom: .5rem; color: var(--text); }
+    .empty p { font-size: .8rem; max-width: 300px; margin: 0 auto 1.5rem; }
+
+    /* ── Modal ── */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,.7);
+      backdrop-filter: blur(4px);
+      display: flex; align-items: center; justify-content: center;
+      z-index: 500;
+      animation: fadeIn .15s ease;
+    }
+    .modal {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r);
+      padding: 2rem;
+      width: min(520px, 92vw);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal h2 {
+      font-family: var(--serif); font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .modal-actions {
+      display: flex; justify-content: flex-end; gap: .5rem;
+      margin-top: 1.5rem; padding-top: 1.5rem;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: 2rem; right: 2rem;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--r-sm); padding: .7rem 1.2rem;
+      font-size: .75rem; color: var(--text);
+      opacity: 0; transform: translateY(8px);
+      transition: all .25s; pointer-events: none; z-index: 999;
+    }
+    #toast.show { opacity: 1; transform: none; }
+
+    /* ── Section headers ── */
+    .section-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+    .section-title {
+      font-size: .65rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-dim);
+    }
+
+    /* ── Reference sidebar chip ── */
+    .coalition-ref {
+      display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;
+    }
+    .ref-card {
+      flex: 1; min-width: 200px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: var(--r); padding: 1rem;
+    }
+    .ref-card-title {
+      font-size: .65rem; letter-spacing: .1em; text-transform: uppercase;
+      margin-bottom: .75rem;
+    }
+    .ref-card-title.blue { color: var(--blue); }
+    .ref-card-title.white { color: var(--white-coal); }
+    .ref-tag {
+      display: inline-block; font-size: .65rem;
+      padding: .2rem .55rem; border-radius: 99px;
+      margin: .2rem; letter-spacing: .04em;
+    }
+    .ref-tag.blue { background: var(--blue-glow); color: var(--blue); border: 1px solid var(--blue-dim); }
+    .ref-tag.white { background: rgba(232,232,232,.07); color: var(--white-coal); border: 1px solid #333; }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      main { padding: 1rem; }
+      header { padding: 1rem; }
+      .field-row { grid-template-columns: 1fr; }
+      .weight-row { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">⚖</div>
+    <div>
+      <h1>Parliament</h1>
+      <span>Decision Dashboard</span>
+    </div>
+  </div>
+  <div class="header-actions">
+    <button class="btn btn-sm" onclick="exportData()">↑ Export</button>
+    <label class="btn btn-sm" style="cursor:pointer">
+      ↓ Import
+      <input type="file" accept=".json" style="display:none" onchange="importData(event)" />
+    </label>
+    <button class="btn btn-primary btn-sm" onclick="openNewDecisionModal()">+ New Decision</button>
+  </div>
+</header>
+
+<main>
+  <!-- Tab Nav -->
+  <nav class="tab-nav">
+    <button class="tab-btn active" onclick="switchTab('overview')">Overview</button>
+    <button class="tab-btn" onclick="switchTab('history')">History</button>
+    <button class="tab-btn" onclick="switchTab('reference')">Reference</button>
+  </nav>
+
+  <!-- Overview Tab -->
+  <div id="tab-overview" class="view active">
+    <div id="overview-content"></div>
+  </div>
+
+  <!-- History Tab -->
+  <div id="tab-history" class="view">
+    <div class="section-header">
+      <span class="section-title">All Decisions</span>
+      <div style="display:flex;gap:.5rem">
+        <button class="btn btn-sm" onclick="filterHistory('all')" id="filter-all" style="border-color:var(--blue);color:var(--blue)">All</button>
+        <button class="btn btn-sm" onclick="filterHistory('active')" id="filter-active">Active</button>
+        <button class="btn btn-sm" onclick="filterHistory('archived')" id="filter-archived">Archived</button>
+      </div>
+    </div>
+    <div id="history-list" class="history-list"></div>
+  </div>
+
+  <!-- Reference Tab -->
+  <div id="tab-reference" class="view">
+    <div style="margin-bottom:1.5rem">
+      <h2 style="font-size:1.6rem;margin-bottom:.4rem">Coalition Thinking Modes</h2>
+      <p style="font-size:.78rem;color:var(--text-dim)">Two ways your internal parliament processes decisions.</p>
+    </div>
+    <div class="coalition-ref">
+      <div class="ref-card">
+        <div class="ref-card-title blue">🔵 Blue Coalition — The Engineers</div>
+        <div>
+          <span class="ref-tag blue">Systems Thinking</span>
+          <span class="ref-tag blue">Execution-Oriented</span>
+          <span class="ref-tag blue">Evidence-Based</span>
+          <span class="ref-tag blue">Optimization-Focused</span>
+          <span class="ref-tag blue">Results-Driven</span>
+          <span class="ref-tag blue">Structure & Planning</span>
+          <span class="ref-tag blue">Efficiency & Measurability</span>
+        </div>
+      </div>
+      <div class="ref-card">
+        <div class="ref-card-title white">⚪ White Coalition — The Philosophers</div>
+        <div>
+          <span class="ref-tag white">Values Thinking</span>
+          <span class="ref-tag white">Intuition-Guided</span>
+          <span class="ref-tag white">Relational-Focused</span>
+          <span class="ref-tag white">Humanity-Centered</span>
+          <span class="ref-tag white">Emotional Sovereignty</span>
+          <span class="ref-tag white">Kindness & Integrity</span>
+          <span class="ref-tag white">Quality of Experience</span>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="font-size:.8rem;color:var(--text-dim);line-height:1.7">
+      <strong style="color:var(--text);font-family:var(--serif);font-size:1rem">How to use weights</strong><br><br>
+      Assign a weight (integer) to each coalition per category based on how strongly that side's logic applies. A higher Blue weight means the engineering/analytical perspective dominates for that domain. A higher White weight means the values/intuitive perspective leads.<br><br>
+      The <em>General Weight</em> reflects the overall parliament result — you can set this independently to capture a holistic gut check.
+    </div>
+  </div>
+</main>
+
+<!-- New/Edit Decision Modal -->
+<div id="decision-modal" class="modal-backdrop" style="display:none">
+  <div class="modal">
+    <h2 id="modal-title">New Decision</h2>
+    <div class="field" style="margin-bottom:1rem">
+      <label>Decision Title</label>
+      <input type="text" id="modal-name" placeholder="e.g. Should I take the new job offer?" />
+    </div>
+    <div class="field" style="margin-bottom:1.5rem">
+      <label>Notes (optional)</label>
+      <textarea id="modal-notes" rows="2" placeholder="Context, deadline, anything relevant..." style="resize:vertical"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('decision-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveDecision()">Create Decision</button>
+    </div>
+  </div>
+</div>
+
+<!-- Category Edit Modal -->
+<div id="category-modal" class="modal-backdrop" style="display:none">
+  <div class="modal">
+    <h2>Edit Categories</h2>
+    <p style="font-size:.75rem;color:var(--text-dim);margin-bottom:1.25rem">Add, rename, or remove categories. Changes apply to this decision only.</p>
+    <div id="category-editor-list"></div>
+    <button class="btn btn-sm" style="margin-top:1rem" onclick="addCategoryRow()">+ Add Category</button>
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('category-modal')">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCategories()">Save Categories</button>
+    </div>
+  </div>
+</div>
+
+<!-- View Decision Modal (from history) -->
+<div id="view-modal" class="modal-backdrop" style="display:none">
+  <div class="modal" id="view-modal-content"></div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ── State ──
+let state = {
+  decisions: [],
+  activeId: null
+};
+
+const DEFAULT_CATEGORIES = ['Interpersonal', 'Health & Leisure', 'Finance'];
+
+function makeDecision(name, notes = '') {
+  return {
+    id: Date.now().toString(),
+    name,
+    notes,
+    createdAt: new Date().toISOString(),
+    archived: false,
+    generalBlue: 0,
+    generalWhite: 0,
+    categories: DEFAULT_CATEGORIES.map(n => ({ name: n, blue: 0, white: 0 }))
+  };
+}
+
+// ── Persistence ──
+function save() {
+  localStorage.setItem('parliament_state', JSON.stringify(state));
+}
+function load() {
+  try {
+    const raw = localStorage.getItem('parliament_state');
+    if (raw) state = JSON.parse(raw);
+  } catch(e) {}
+  // migrate
+  if (!state.decisions) state.decisions = [];
+  if (!state.activeId && state.decisions.length > 0) state.activeId = state.decisions[0].id;
+}
+
+// ── Export / Import ──
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `parliament-${Date.now()}.json`;
+  a.click(); URL.revokeObjectURL(url);
+  toast('Data exported');
+}
+function importData(e) {
+  const file = e.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const imported = JSON.parse(ev.target.result);
+      if (!imported.decisions) throw new Error();
+      state = imported;
+      save(); renderAll();
+      toast('Data imported successfully');
+    } catch { toast('Invalid JSON file'); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+}
+
+// ── Active Decision helpers ──
+function getActive() {
+  return state.decisions.find(d => d.id === state.activeId) || null;
+}
+function setActive(id) {
+  state.activeId = id; save(); renderAll();
+}
+
+// ── Tabs ──
+let currentTab = 'overview';
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-btn').forEach((b,i) => b.classList.remove('active'));
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  const idx = ['overview','history','reference'].indexOf(tab);
+  document.querySelectorAll('.tab-btn')[idx].classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+  if (tab === 'history') renderHistory();
+}
+
+// ── Render Overview ──
+function renderOverview() {
+  const el = document.getElementById('overview-content');
+  const d = getActive();
+
+  if (!d) {
+    el.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">⚖</div>
+        <h3>No active decision</h3>
+        <p>Create your first decision to begin deliberation.</p>
+        <button class="btn btn-primary" onclick="openNewDecisionModal()">+ New Decision</button>
+      </div>`;
+    return;
+  }
+
+  const totalBlue = d.generalBlue;
+  const totalWhite = d.generalWhite;
+  const total = totalBlue + totalWhite;
+  const pct = total === 0 ? 50 : Math.round((totalBlue / total) * 100);
+  let verdictLabel = 'Tied', verdictClass = 'tied';
+  if (totalBlue > totalWhite) { verdictLabel = 'Blue Leads'; verdictClass = 'blue'; }
+  if (totalWhite > totalBlue) { verdictLabel = 'White Leads'; verdictClass = 'white'; }
+
+  const catCards = d.categories.map((c, i) => `
+    <div class="category-card">
+      <div class="category-name">${esc(c.name)}</div>
+      <div class="category-scores">
+        <span class="cat-score blue">${c.blue}</span>
+        <span class="cat-divider">·</span>
+        <span class="cat-score white">${c.white}</span>
+      </div>
+      <div style="margin-top:.5rem;font-size:.6rem;color:var(--text-dim)">
+        Blue · White
+      </div>
+      <div class="cat-actions">
+        <div class="stepper">
+          <button class="stepper-btn" onclick="adjustCat(${i},'blue',-1)">−</button>
+          <input type="number" value="${c.blue}" onchange="setCat(${i},'blue',this.value)" style="width:48px;text-align:center;font-size:.78rem;padding:.3rem .4rem" />
+          <button class="stepper-btn" onclick="adjustCat(${i},'blue',1)">+</button>
+          <span style="font-size:.6rem;color:var(--blue);margin-left:.2rem">B</span>
+        </div>
+        <div class="stepper" style="margin-top:.4rem">
+          <button class="stepper-btn" onclick="adjustCat(${i},'white',-1)">−</button>
+          <input type="number" value="${c.white}" onchange="setCat(${i},'white',this.value)" style="width:48px;text-align:center;font-size:.78rem;padding:.3rem .4rem" />
+          <button class="stepper-btn" onclick="adjustCat(${i},'white',1)">+</button>
+          <span style="font-size:.6rem;color:var(--white-dim);margin-left:.2rem">W</span>
+        </div>
+      </div>
+    </div>
+  `).join('');
+
+  const otherDecisions = state.decisions.filter(x => x.id !== d.id && !x.archived);
+
+  el.innerHTML = `
+    <div class="overview-header">
+      <div class="decision-title-group">
+        <div class="decision-label">Active Decision</div>
+        <div class="decision-title">${esc(d.name)}</div>
+        ${d.notes ? `<div class="decision-date" style="margin-top:.5rem;font-style:italic">${esc(d.notes)}</div>` : ''}
+        <div class="decision-date">Created ${fmtDate(d.createdAt)}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:.4rem;align-items:flex-end">
+        ${otherDecisions.length > 0 ? `
+          <select class="btn btn-sm" style="cursor:pointer" onchange="setActive(this.value)">
+            <option value="${d.id}">Current decision</option>
+            ${otherDecisions.map(x => `<option value="${x.id}">${esc(x.name)}</option>`).join('')}
+          </select>` : ''}
+        <button class="btn btn-sm" onclick="archiveActive()">${d.archived ? 'Unarchive' : 'Archive'}</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteActive()">Delete</button>
+      </div>
+    </div>
+
+    <!-- General Weight -->
+    <div class="general-weight-card">
+      <div class="weight-card-label">General Weight</div>
+      <div class="weight-row">
+        <div class="weight-block">
+          <div class="weight-score blue">${d.generalBlue}</div>
+          <div class="coalition-name">🔵 Blue Coalition</div>
+          <div class="coalition-desc">The Engineers</div>
+          <div class="stepper" style="margin-top:.75rem">
+            <button class="stepper-btn" onclick="adjustGeneral('blue',-1)">−</button>
+            <input type="number" value="${d.generalBlue}" onchange="setGeneral('blue',this.value)" style="width:55px;text-align:center;font-size:.8rem;padding:.35rem .4rem" />
+            <button class="stepper-btn" onclick="adjustGeneral('blue',1)">+</button>
+          </div>
+        </div>
+        <div class="weight-block">
+          <div class="weight-score white">${d.generalWhite}</div>
+          <div class="coalition-name">⚪ White Coalition</div>
+          <div class="coalition-desc">The Philosophers</div>
+          <div class="stepper" style="margin-top:.75rem">
+            <button class="stepper-btn" onclick="adjustGeneral('white',-1)">−</button>
+            <input type="number" value="${d.generalWhite}" onchange="setGeneral('white',this.value)" style="width:55px;text-align:center;font-size:.8rem;padding:.35rem .4rem" />
+            <button class="stepper-btn" onclick="adjustGeneral('white',1)">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="verdict-bar" style="margin-top:1.5rem">
+        <div class="verdict-fill" style="width:${pct}%"></div>
+      </div>
+      <div class="verdict-labels">
+        <span>🔵 Blue</span>
+        <span class="verdict-chip ${verdictClass}">${verdictLabel}</span>
+        <span>White ⚪</span>
+      </div>
+    </div>
+
+    <!-- Categories -->
+    <div class="section-header">
+      <span class="section-title">Category Weights</span>
+      <button class="btn btn-sm" onclick="openCategoryModal()">Edit Categories</button>
+    </div>
+    ${d.categories.length === 0
+      ? `<div style="color:var(--text-dim);font-size:.8rem;padding:1rem 0">No categories yet. Click "Edit Categories" to add some.</div>`
+      : `<div class="categories-grid">${catCards}</div>`
+    }
+  `;
+}
+
+// ── Render History ──
+let historyFilter = 'all';
+function filterHistory(f) {
+  historyFilter = f;
+  ['all','active','archived'].forEach(x => {
+    const el = document.getElementById('filter-' + x);
+    el.style.borderColor = x === f ? 'var(--blue)' : 'var(--border)';
+    el.style.color = x === f ? 'var(--blue)' : 'var(--text-dim)';
+  });
+  renderHistory();
+}
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  let decisions = [...state.decisions].reverse();
+  if (historyFilter === 'active') decisions = decisions.filter(d => !d.archived);
+  if (historyFilter === 'archived') decisions = decisions.filter(d => d.archived);
+
+  if (decisions.length === 0) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><h3>Nothing here</h3><p>No decisions match this filter.</p></div>`;
+    return;
+  }
+
+  el.innerHTML = decisions.map(d => {
+    const b = d.generalBlue, w = d.generalWhite;
+    let vc = 'tied', vl = 'Tied';
+    if (b > w) { vc = 'blue'; vl = 'Blue'; }
+    if (w > b) { vc = 'white'; vl = 'White'; }
+    const isActive = d.id === state.activeId;
+    return `
+      <div class="history-item${d.archived ? ' archived' : ''}" onclick="openViewModal('${d.id}')">
+        <div class="history-info">
+          <div class="history-name">${esc(d.name)} ${isActive ? '<span style="font-family:var(--mono);font-size:.6rem;color:var(--blue);letter-spacing:.08em;vertical-align:middle"> ● ACTIVE</span>' : ''}</div>
+          <div class="history-meta">${fmtDate(d.createdAt)} · ${d.categories.length} categories${d.archived ? ' · Archived' : ''}</div>
+        </div>
+        <div class="history-verdict">
+          <span style="font-family:var(--serif);font-size:1.1rem;color:var(--blue)">${b}</span>
+          <span style="color:var(--text-dim);font-size:.8rem">·</span>
+          <span style="font-family:var(--serif);font-size:1.1rem;color:var(--white-coal)">${w}</span>
+          <span class="verdict-chip ${vc}">${vl}</span>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── View Modal ──
+function openViewModal(id) {
+  const d = state.decisions.find(x => x.id === id); if (!d) return;
+  const el = document.getElementById('view-modal-content');
+  const b = d.generalBlue, w = d.generalWhite;
+  let vc = 'tied', vl = 'Tied';
+  if (b > w) { vc = 'blue'; vl = 'Blue Leads'; }
+  if (w > b) { vc = 'white'; vl = 'White Leads'; }
+
+  const catRows = d.categories.map(c =>
+    `<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:.5rem .75rem;color:var(--text-dim);font-size:.75rem">${esc(c.name)}</td>
+      <td style="padding:.5rem .75rem;font-family:var(--serif);font-size:1.1rem;color:var(--blue)">${c.blue}</td>
+      <td style="padding:.5rem .75rem;font-family:var(--serif);font-size:1.1rem;color:var(--white-coal)">${c.white}</td>
+    </tr>`
+  ).join('');
+
+  el.innerHTML = `
+    <h2 style="margin-bottom:.4rem">${esc(d.name)}</h2>
+    ${d.notes ? `<p style="font-size:.78rem;color:var(--text-dim);margin-bottom:.75rem;font-style:italic">${esc(d.notes)}</p>` : ''}
+    <p style="font-size:.7rem;color:var(--text-dim);margin-bottom:1.5rem">${fmtDate(d.createdAt)}${d.archived ? ' · Archived' : ''}</p>
+    <div style="display:flex;gap:1.5rem;margin-bottom:1.5rem;align-items:center">
+      <div><div style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim)">General Blue</div>
+        <div style="font-family:var(--serif);font-size:2.5rem;color:var(--blue)">${b}</div></div>
+      <div><div style="font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim)">General White</div>
+        <div style="font-family:var(--serif);font-size:2.5rem;color:var(--white-coal)">${w}</div></div>
+      <span class="verdict-chip ${vc}" style="margin-left:auto">${vl}</span>
+    </div>
+    ${catRows ? `<table style="width:100%;border-collapse:collapse;margin-bottom:1rem">
+      <thead><tr style="border-bottom:1px solid var(--border)">
+        <th style="text-align:left;padding:.5rem .75rem;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-dim);font-weight:400">Category</th>
+        <th style="text-align:left;padding:.5rem .75rem;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);font-weight:400">Blue</th>
+        <th style="text-align:left;padding:.5rem .75rem;font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:var(--white-dim);font-weight:400">White</th>
+      </tr></thead>
+      <tbody>${catRows}</tbody>
+    </table>` : ''}
+    <div class="modal-actions">
+      <button class="btn" onclick="closeModal('view-modal')">Close</button>
+      ${d.id !== state.activeId ? `<button class="btn btn-primary" onclick="setActive('${d.id}');closeModal('view-modal')">Set as Active</button>` : ''}
+    </div>
+  `;
+  document.getElementById('view-modal').style.display = 'flex';
+}
+
+// ── Decision CRUD ──
+let editingId = null;
+function openNewDecisionModal() {
+  editingId = null;
+  document.getElementById('modal-title').textContent = 'New Decision';
+  document.getElementById('modal-name').value = '';
+  document.getElementById('modal-notes').value = '';
+  document.getElementById('decision-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('modal-name').focus(), 50);
+}
+function saveDecision() {
+  const name = document.getElementById('modal-name').value.trim();
+  if (!name) { document.getElementById('modal-name').focus(); return; }
+  const notes = document.getElementById('modal-notes').value.trim();
+  const d = makeDecision(name, notes);
+  state.decisions.push(d);
+  state.activeId = d.id;
+  save(); closeModal('decision-modal'); renderAll();
+  toast('Decision created');
+}
+function archiveActive() {
+  const d = getActive(); if (!d) return;
+  d.archived = !d.archived;
+  save(); renderAll();
+  toast(d.archived ? 'Decision archived' : 'Decision unarchived');
+}
+function deleteActive() {
+  const d = getActive(); if (!d) return;
+  if (!confirm(`Delete "${d.name}"? This cannot be undone.`)) return;
+  state.decisions = state.decisions.filter(x => x.id !== d.id);
+  state.activeId = state.decisions.find(x => !x.archived)?.id || state.decisions[0]?.id || null;
+  save(); renderAll(); toast('Decision deleted');
+}
+
+// ── Weight adjustments ──
+function adjustGeneral(side, delta) {
+  const d = getActive(); if (!d) return;
+  const key = side === 'blue' ? 'generalBlue' : 'generalWhite';
+  d[key] = Math.max(0, d[key] + delta);
+  save(); renderOverview();
+}
+function setGeneral(side, val) {
+  const d = getActive(); if (!d) return;
+  const key = side === 'blue' ? 'generalBlue' : 'generalWhite';
+  d[key] = Math.max(0, parseInt(val) || 0);
+  save(); renderOverview();
+}
+function adjustCat(i, side, delta) {
+  const d = getActive(); if (!d) return;
+  d.categories[i][side] = Math.max(0, d.categories[i][side] + delta);
+  save(); renderOverview();
+}
+function setCat(i, side, val) {
+  const d = getActive(); if (!d) return;
+  d.categories[i][side] = Math.max(0, parseInt(val) || 0);
+  save(); renderOverview();
+}
+
+// ── Category Modal ──
+function openCategoryModal() {
+  const d = getActive(); if (!d) return;
+  renderCategoryEditor(d.categories);
+  document.getElementById('category-modal').style.display = 'flex';
+}
+function renderCategoryEditor(cats) {
+  const el = document.getElementById('category-editor-list');
+  el.innerHTML = cats.map((c, i) => `
+    <div class="category-editor-row" id="catrow-${i}">
+      <input class="cat-name-input" type="text" value="${esc(c.name)}" placeholder="Category name" id="catname-${i}" />
+      <button class="btn btn-danger btn-sm" onclick="removeCategoryRow(${i})">✕</button>
+    </div>
+  `).join('');
+}
+let tempCats = [];
+function addCategoryRow() {
+  const d = getActive(); if (!d) return;
+  // collect current names
+  const rows = document.querySelectorAll('[id^="catname-"]');
+  const cats = Array.from(rows).map((r, i) => {
+    const existing = d.categories[i] || { blue: 0, white: 0 };
+    return { name: r.value, blue: existing.blue, white: existing.white };
+  });
+  cats.push({ name: '', blue: 0, white: 0 });
+  renderCategoryEditor(cats);
+  // focus last
+  setTimeout(() => {
+    const last = document.querySelector('[id^="catname-"]:last-of-type') ||
+      document.getElementById('catname-' + (cats.length - 1));
+    if (last) last.focus();
+  }, 50);
+}
+function removeCategoryRow(i) {
+  document.getElementById('catrow-' + i)?.remove();
+  // re-index
+  const rows = document.querySelectorAll('[id^="catrow-"]');
+  rows.forEach((r, ni) => {
+    r.id = 'catrow-' + ni;
+    const inp = r.querySelector('input'); if (inp) inp.id = 'catname-' + ni;
+    const btn = r.querySelector('button'); if (btn) btn.setAttribute('onclick', `removeCategoryRow(${ni})`);
+  });
+}
+function saveCategories() {
+  const d = getActive(); if (!d) return;
+  const inputs = document.querySelectorAll('[id^="catname-"]');
+  const newCats = Array.from(inputs).map((inp, i) => {
+    const existing = d.categories[i] || { blue: 0, white: 0 };
+    return { name: inp.value.trim() || 'Unnamed', blue: existing.blue, white: existing.white };
+  }).filter(c => c.name);
+  d.categories = newCats;
+  save(); closeModal('category-modal'); renderOverview();
+  toast('Categories saved');
+}
+
+// ── Utilities ──
+function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+function esc(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function fmtDate(iso) {
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2500);
+}
+function renderAll() {
+  renderOverview();
+  if (currentTab === 'history') renderHistory();
+}
+
+// ── Modal close on backdrop click ──
+document.querySelectorAll('.modal-backdrop').forEach(b => {
+  b.addEventListener('click', e => { if (e.target === b) b.style.display = 'none'; });
+});
+
+// ── Keyboard ──
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') document.querySelectorAll('.modal-backdrop').forEach(b => b.style.display = 'none');
+  if (e.key === 'Enter' && document.getElementById('decision-modal').style.display !== 'none') {
+    saveDecision();
+  }
+});
+
+// ── Init ──
+load();
+renderAll();
+</script>
+
+<!-- PWA Service Worker Registration -->
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(() => {});
+}
+</script>
+</body>
+</html>
