@@ -1,5 +1,5 @@
 // Parliament PWA Service Worker
-const CACHE = 'parliament-v1';
+const CACHE = 'parliament-v2';
 const ASSETS = [
   '/ddmm-dashboard/',
   '/ddmm-dashboard/index.html',
