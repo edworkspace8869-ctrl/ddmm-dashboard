@@ -1,48 +1,56 @@
-// Parliament PWA Service Worker
-const CACHE = 'parliament-v2';
-const ASSETS = [
+// Parliament — Service Worker
+// Cache-first strategy. All core assets cached on install.
+// No external font dependencies — app works fully offline.
+
+const CACHE = 'parliament-v4';
+const CORE = [
   '/ddmm-dashboard/',
   '/ddmm-dashboard/index.html',
   '/ddmm-dashboard/manifest.json',
-  'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=DM+Mono:wght@300;400;500&display=swap'
 ];
 
+// ── Install: pre-cache everything ──────────────────
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(c => {
-      // Cache core assets; fonts may fail if offline at install time — that's OK
-      return Promise.allSettled(ASSETS.map(url => c.add(url).catch(() => {})));
-    }).then(() => self.skipWaiting())
+    caches.open(CACHE)
+      .then(c => c.addAll(CORE))
+      .then(() => self.skipWaiting())
   );
 });
 
+// ── Activate: clear old caches ─────────────────────
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.filter(k => k !== CACHE).map(k => caches.delete(k))
+      ))
+      .then(() => self.clients.claim())
   );
 });
 
+// ── Fetch: cache-first, network fallback ───────────
 self.addEventListener('fetch', e => {
-  // Network first for navigations, cache first for assets
-  if (e.request.mode === 'navigate') {
-    e.respondWith(
-      fetch(e.request).catch(() => caches.match('/index.html'))
-    );
-    return;
-  }
+  // Only handle GET requests for same-origin or core assets
+  if (e.request.method !== 'GET') return;
+
   e.respondWith(
     caches.match(e.request).then(cached => {
       if (cached) return cached;
+
+      // Not in cache — try network, then cache the response
       return fetch(e.request).then(res => {
-        // Cache successful responses
-        if (res && res.status === 200 && res.type !== 'opaque') {
+        if (res && res.status === 200) {
           const clone = res.clone();
           caches.open(CACHE).then(c => c.put(e.request, clone));
         }
         return res;
-      }).catch(() => cached);
+      }).catch(() => {
+        // Offline and not cached — return index.html for navigation requests
+        if (e.request.mode === 'navigate') {
+          return caches.match('./index.html');
+        }
+      });
     })
   );
 });

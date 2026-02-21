@@ -1,11 +1,11 @@
 {
-  "name": "Parliament — Decision Dashboard",
+  "name": "Parliament",
   "short_name": "Parliament",
-  "description": "Delayed Decision-Making Mechanism personal dashboard",
-  "start_url": "/ddmm-dashboard/",
+  "description": "Inner Discussion Group — Decision Dashboard",
+  "start_url": "/ddmm-dashboard/index.html",
   "display": "standalone",
-  "background_color": "#0f0f13",
-  "theme_color": "#0f0f13",
+  "background_color": "#f5f2eb",
+  "theme_color": "#0c0c10",
   "orientation": "portrait-primary",
   "icons": [
     {
