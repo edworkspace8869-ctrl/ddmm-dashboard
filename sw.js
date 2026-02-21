@@ -2,7 +2,7 @@
 // Cache-first strategy. All core assets cached on install.
 // No external font dependencies — app works fully offline.
 
-const CACHE = 'parliament-v4';
+const CACHE = 'parliament-v5';
 const CORE = [
   '/ddmm-dashboard/',
   '/ddmm-dashboard/index.html',
