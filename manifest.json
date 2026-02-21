@@ -1,7 +1,7 @@
 {
-  "name": "Parliament",
-  "short_name": "Parliament",
-  "description": "Inner Discussion Group — Decision Dashboard",
+  "name": "Delayed Decision-Making Mechanism",
+  "short_name": "DDMM",
+  "description": "Delayed Decision-Making Mechanism — Inner Discussion Group",
   "start_url": "/ddmm-dashboard/index.html",
   "display": "standalone",
   "background_color": "#f5f2eb",

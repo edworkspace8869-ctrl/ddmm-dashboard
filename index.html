@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<title>Parliament</title>
+<title>Delayed Decision-Making Mechanism</title>
 <meta name="theme-color" content="#0c0c10"/>
 <link rel="manifest" href="manifest.json"/>
 <style>
@@ -335,10 +335,10 @@ input[type=number].fi::-webkit-inner-spin-button{display:none;}
 <body>
 
 <header>
-  <div class="logo">
-    <h1>Parliament</h1>
+    <div class="logo">
+    <h1>DDMM</h1>
     <div class="logo-sep"></div>
-    <span class="logo-sub">Inner Discussion Group</span>
+    <span class="logo-sub">Delayed Decision-Making Mechanism</span>
   </div>
   <span class="pwa-hint">Personal · Offline</span>
 </header>
@@ -656,6 +656,14 @@ function renderStep5(){
       <button class="btn btn-danger btn-sm" onclick="showDissolveConfirm()">Dissolve</button>
     </div>
 
+    <div id="dissolve-confirm" style="display:none;margin-bottom:1rem;padding:1rem 1.1rem;background:var(--red-pale);border:1.5px solid rgba(192,57,43,.3);border-radius:var(--r);">
+      <p style="font-size:.82rem;color:var(--ink);margin-bottom:.85rem;">Are you sure? This will clear all weights and seat assignments.</p>
+      <div style="display:flex;gap:.5rem;">
+        <button class="btn btn-danger btn-sm" onclick="dissolve()">Yes, Dissolve</button>
+        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('dissolve-confirm').style.display='none'">Cancel</button>
+      </div>
+    </div>
+
     <div class="card">
       <div class="card-header"><div class="card-title">General Weights</div></div>
       ${P.thoughts.map(t=>`
@@ -668,14 +676,6 @@ function renderStep5(){
     <div class="card" style="margin-top:.75rem;">
       <div class="card-header"><div class="card-title">Specialised Fields</div></div>
       ${fieldSummary}
-    </div>
-
-    <div id="dissolve-confirm" style="display:none;margin-top:1rem;padding:1rem 1.1rem;background:var(--red-pale);border:1.5px solid rgba(192,57,43,.3);border-radius:var(--r);">
-      <p style="font-size:.82rem;color:var(--ink);margin-bottom:.85rem;">Are you sure? This will clear all weights and seat assignments.</p>
-      <div style="display:flex;gap:.5rem;">
-        <button class="btn btn-danger btn-sm" onclick="dissolve()">Yes, Dissolve</button>
-        <button class="btn btn-ghost btn-sm" onclick="document.getElementById('dissolve-confirm').style.display='none'">Cancel</button>
-      </div>
     </div>
 
     <div style="margin-top:1.5rem;text-align:center;">
@@ -964,8 +964,9 @@ function renderVoteResult(){
         const selectedFields=P.fields.filter(f=>vote.fields.has(f.name));
         const totalSeats=selectedFields.reduce((acc,f)=>acc+(f.seats[t.name]||0),0);
         const n=selectedFields.length;
-        const effective=t.weight+totalSeats/n;
-        return `<span style="color:var(--ink);">${esc(t.name)}</span>: ${t.weight} + ${totalSeats}/${n} = <strong style="color:var(--gold);">${fmt(effective)}</strong>`;
+        const bonus=Math.round(totalSeats/n);
+        const effective=t.weight+bonus;
+        return `<span style="color:var(--ink);">${esc(t.name)}</span>: ${t.weight} + round(${totalSeats}/${n}) = <strong style="color:var(--gold);">${fmt(effective)}</strong>`;
       }).join(' &nbsp;|&nbsp; ')}
     </div>`:'';
 
@@ -1013,9 +1014,8 @@ function computeEffectiveWeights(){
     if(selectedFields.length===0){
       w[t.name]=t.weight;
     } else {
-      // avg of this thought's seats across each selected field
       const totalSeats=selectedFields.reduce((acc,f)=>acc+(f.seats[t.name]||0),0);
-      const avgSeats=totalSeats/selectedFields.length;
+      const avgSeats=Math.round(totalSeats/selectedFields.length);
       w[t.name]=t.weight+avgSeats;
     }
   });
